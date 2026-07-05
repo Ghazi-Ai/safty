@@ -2,1003 +2,586 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إدارة البيانات — حوادث السلامة 2025</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>لوحة الإدارة — حوادث السلامة المرورية</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#0d1117;--surface:#161b22;--card:#1c2333;--border:#30363d;
-  --accent:#58a6ff;--green:#3fb950;--red:#f85149;--orange:#f0883e;
-  --purple:#bc8cff;--text:#e6edf3;--muted:#8b949e;--dim:#484f58;
+:root{
+  --page:#0f1526; --surface:#16213e; --surface-2:#1c2947;
+  --border:rgba(255,255,255,.09); --grid:#2a3655;
+  --text:#f2f4f8; --text-2:#c3c9d6; --muted:#8b93a7;
+  --blue:#3987e5; --aqua:#199e70; --red:#e66767; --critical:#d03b3b;
+  --serious:#ec835a; --good:#0ca30c; --warning:#fab219; --violet:#9085e9;
+  --radius:14px; --font:'IBM Plex Sans Arabic',system-ui,Tahoma,sans-serif;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--page);color:var(--text);font-size:13px;min-height:100vh}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#33406366;border-radius:4px}
+button,select,input,textarea{font-family:var(--font)}
 
-/* Topbar */
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:90px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.tb-left{display:flex;align-items:center;gap:12px}
-.tb-logo{height:80px;display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.95);border-radius:8px;padding:3px 8px;}
-.tb-logo img{height:200px;width:auto;object-fit:contain;}
-.tb-title{font-size:15px;font-weight:700}
-.tb-sub{font-size:11px;color:var(--muted)}
-.btn{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:6px}
-.btn-primary{background:var(--accent);color:#000;font-weight:600}
-.btn-primary:hover{background:#79bbff}
-.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.btn-success{background:var(--green);color:#000;font-weight:600}
-.btn-success:hover{background:#56d364}
-.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red)}
-.btn-danger:hover{background:rgba(248,81,73,.1)}
-a.btn{text-decoration:none}
+/* Login */
+#login-screen{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(1200px 700px at 70% -10%,#1c2947 0%,#0f1526 55%,#0a0f1d 100%)}
+.login-card{width:min(420px,92vw);background:linear-gradient(180deg,#1c2947dd,#16213eee);
+  border:1px solid var(--border);border-radius:22px;padding:36px 32px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.login-card img{width:min(220px,65%);margin-bottom:16px}
+.login-card h1{font-size:16px;margin-bottom:4px}
+.login-card p{color:var(--muted);font-size:12px;margin-bottom:20px}
+.login-card input{width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--grid);
+  background:#0f1526;color:var(--text);font-size:16px;text-align:center;letter-spacing:6px;outline:none}
+.login-card input:focus{border-color:var(--blue)}
+#login-err{color:var(--red);font-size:12px;margin-top:10px;display:none}
+#login-note{color:var(--warning);font-size:11px;margin-top:10px;display:none}
+.login-btn{width:100%;margin-top:14px;padding:13px;border:none;border-radius:12px;cursor:pointer;
+  background:linear-gradient(135deg,#3987e5,#2a6ec4);color:#fff;font-size:14px;font-weight:700}
+.login-btn:disabled{opacity:.6}
 
-/* Layout */
-.layout{max-width:1400px;margin:0 auto;padding:24px 20px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
-.card-body{padding:20px}
+/* Shell */
+#app{display:none;max-width:1200px;margin:0 auto;padding:16px}
+#app.ready{display:block}
+header{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+header img{height:40px}
+header h1{font-size:16px;flex:1;min-width:200px}
+.hbtn{background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);padding:8px 16px;
+  border-radius:10px;font-size:12px;cursor:pointer;text-decoration:none;transition:all .15s}
+.hbtn:hover{border-color:var(--blue);color:var(--text)}
 
-/* Stats bar */
-.stats-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;gap:24px;flex-wrap:wrap}
-.stat-item{display:flex;align-items:center;gap:8px;font-size:13px}
-.stat-val{font-weight:700;font-size:18px}
-.s-blue{color:var(--accent)} .s-red{color:var(--red)} .s-orange{color:var(--orange)} .s-green{color:var(--green)}
+/* Stats strip */
+#stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px}
+.stat .k{font-size:11px;color:var(--muted);margin-bottom:4px}
+.stat .v{font-size:22px;font-weight:700}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin-bottom:16px}
+.card h2{font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h2 .grow{flex:1}
 
 /* Form */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.fg{margin-bottom:0}
-.fg label{font-size:11px;color:var(--muted);display:block;margin-bottom:5px;font-weight:500}
-input,select,textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:7px;font-size:13px;font-family:inherit;outline:none;direction:rtl;transition:border .15s}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-textarea{resize:vertical;min-height:70px}
-.form-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:11px;color:var(--muted)}
+.fg input,.fg select,.fg textarea{padding:8px 10px;border-radius:9px;border:1px solid var(--grid);
+  background:var(--surface-2);color:var(--text);font-size:12px;outline:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
+.fg.full{grid-column:1/-1}
+.btn{padding:9px 20px;border:none;border-radius:10px;cursor:pointer;font-size:12.5px;font-weight:600;transition:all .15s}
+.btn-primary{background:linear-gradient(135deg,#3987e5,#2a6ec4);color:#fff}
+.btn-success{background:linear-gradient(135deg,#199e70,#0e7a54);color:#fff}
+.btn-danger{background:transparent;border:1px solid var(--critical);color:#f28b8b}
+.btn-danger:hover{background:rgba(208,59,59,.15)}
+.btn-ghost{background:var(--surface-2);border:1px solid var(--border);color:var(--text-2)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--text)}
+.btn:hover{transform:translateY(-1px)}
 
 /* Table */
-.table-wrap{overflow-x:auto;max-height:420px;overflow-y:auto}
-table{width:100%;border-collapse:collapse;font-size:12px}
-thead th{background:var(--surface);padding:9px 12px;text-align:right;color:var(--muted);position:sticky;top:0;border-bottom:1px solid var(--border);white-space:nowrap;font-weight:600}
-tbody tr{border-bottom:1px solid rgba(48,54,61,.5);transition:.12s}
-tbody tr:hover{background:rgba(88,166,255,.05)}
-tbody td{padding:7px 12px;vertical-align:middle}
-.badge{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700}
-.b-red{background:rgba(248,81,73,.15);color:var(--red)}
-.b-ora{background:rgba(240,136,62,.15);color:var(--orange)}
-.b-blue{background:rgba(88,166,255,.15);color:var(--accent)}
-.b-green{background:rgba(63,185,80,.15);color:var(--green)}
+#tbl-wrap{overflow:auto;max-height:55vh;border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:11.5px;white-space:nowrap}
+th{position:sticky;top:0;background:var(--surface-2);color:var(--muted);padding:8px;text-align:right;
+  font-weight:600;font-size:10.5px;z-index:2}
+td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text-2)}
+tbody tr:hover td{background:rgba(57,135,229,.07)}
+.badge{display:inline-block;padding:2px 8px;border-radius:9px;font-size:10.5px;font-weight:700}
+.b-red{background:rgba(208,59,59,.18);color:#f28b8b}
+.b-orange{background:rgba(236,131,90,.16);color:#f0a480}
+.b-zero{background:rgba(255,255,255,.05);color:var(--muted);font-weight:400}
+.row-btn{padding:3px 10px;border-radius:7px;border:none;cursor:pointer;font-size:11px;margin-inline-start:4px}
+.rb-edit{background:rgba(57,135,229,.15);color:#9cc4f2}
+.rb-del{background:rgba(208,59,59,.15);color:#f28b8b}
 
-/* Import panel */
-.drop-zone{border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:.2s;color:var(--muted)}
-.drop-zone:hover,.drop-zone.drag{border-color:var(--accent);color:var(--accent);background:rgba(88,166,255,.04)}
-.drop-zone .dz-icon{font-size:36px;margin-bottom:8px}
-.drop-zone .dz-label{font-size:14px;font-weight:600}
-.drop-zone .dz-sub{font-size:11px;margin-top:4px}
-input[type=file]{display:none}
+/* Alerts / misc */
+.alert{padding:10px 14px;border-radius:10px;font-size:12px;margin-bottom:12px;display:none}
+.alert.ok{display:block;background:rgba(12,163,12,.12);border:1px solid rgba(12,163,12,.4);color:#7fd97f}
+.alert.warn{display:block;background:rgba(250,178,25,.1);border:1px solid rgba(250,178,25,.4);color:#f5c96a}
+.alert.err{display:block;background:rgba(208,59,59,.12);border:1px solid rgba(208,59,59,.45);color:#f28b8b}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+#search-inp{flex:1;min-width:160px;padding:8px 12px;border-radius:9px;border:1px solid var(--grid);
+  background:var(--surface-2);color:var(--text);font-size:12px;outline:none}
+.pin-row{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:10px;padding:9px 14px;margin-bottom:6px}
+.pin-row .name{flex:1;font-size:12.5px}
+.role-tag{font-size:10px;padding:2px 10px;border-radius:9px}
+.role-admin{background:rgba(250,178,25,.15);color:#f5c96a}
+.role-user{background:rgba(57,135,229,.15);color:#9cc4f2}
 
-/* Progress */
-.progress{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:12px}
-.progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);z-index:6000;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:11px 22px;
+  border-radius:12px;font-size:12.5px;transition:transform .3s;max-width:90vw}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:var(--red);color:#f2a0a0}
 
-/* Alert */
-.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.alert-success{background:rgba(63,185,80,.1);border:1px solid var(--green);color:var(--green)}
-.alert-warn{background:rgba(240,136,62,.1);border:1px solid var(--orange);color:var(--orange)}
-.alert-error{background:rgba(248,81,73,.1);border:1px solid var(--red);color:var(--red)}
-.alert{display:none}
-.alert.show{display:flex}
-
-/* Tab */
-.tabs{display:flex;gap:2px;padding:4px;background:var(--surface);border-radius:8px;width:fit-content;margin-bottom:20px}
-.tab{padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;border:none;background:none;color:var(--muted);font-family:inherit;transition:.15s}
-.tab.active{background:var(--accent);color:#000;font-weight:600}
-
-/* Full-width */
-.full-width{grid-column:1/-1}
-
-/* Confirm dialog */
-#confirm-dialog{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);align-items:center;justify-content:center}
-#confirm-dialog.open{display:flex}
-.dialog-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:400px;width:90%;text-align:center}
-.dialog-title{font-size:16px;font-weight:700;margin-bottom:8px}
-.dialog-msg{font-size:13px;color:var(--muted);margin-bottom:20px}
-.dialog-actions{display:flex;gap:10px;justify-content:center}
-
-/* Notify */
-#notify{position:fixed;bottom:20px;left:20px;padding:10px 18px;border-radius:8px;font-size:13px;z-index:999;display:none}
-
-@media(max-width:900px){
-  .layout{grid-template-columns:1fr}
-  .form-grid{grid-template-columns:1fr}
-}
-
-@media(max-width:600px){
-  /* Topbar */
-  .topbar{height:56px;padding:0 10px}
-  .tb-logo{height:44px;padding:2px 6px;border-radius:6px}
-  .tb-logo img{height:38px}
-  .tb-title{font-size:12px}
-  .tb-sub{display:none}
-  .btn{padding:5px 8px;font-size:11px;gap:3px}
-
-  /* Stats bar */
-  .stats-bar{padding:8px 12px;gap:12px;overflow-x:auto;flex-wrap:nowrap}
-  .stat-val{font-size:14px}
-  .stat-item{font-size:11px;white-space:nowrap}
-
-  /* Login screen */
-  #login-screen > div{padding:20px 14px!important}
-  #admin-logo-box{
-    padding:12px 0!important;
-    border-radius:0!important;
-    margin:0 -14px 14px!important;
-    width:calc(100% + 28px)!important;
-  }
-  #admin-logo-img{height:auto!important;width:96%!important;max-height:none!important;margin:0 auto!important;display:block!important}
-
-  /* Layout */
-  .layout{padding:12px}
-  .card-header{flex-direction:column;align-items:flex-start;gap:8px}
-  .card-header > div:last-child{width:100%;flex-wrap:wrap}
+@media(max-width:800px){
+  .form-grid{grid-template-columns:1fr 1fr}
+  #stats{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- ── LOGIN SCREEN ── -->
-<div id="login-screen" style="
-  position:fixed;inset:0;z-index:9999;
-  background:linear-gradient(135deg,#0d1117 0%,#161b22 100%);
-  display:flex;align-items:center;justify-content:center;
-">
-  <div style="
-    background:#1c2333;border:1px solid #30363d;border-radius:16px;
-    padding:40px 48px;width:min(460px,92vw);text-align:center;
-    box-shadow:0 20px 60px rgba(0,0,0,.5);
-  ">
-    <div style="margin-bottom:20px">
-      <div id="admin-logo-box" style="background:rgba(255,255,255,.95);border-radius:10px;padding:8px 16px;display:block;margin-bottom:16px">
-        <img src="logo.svg" id="admin-logo-img" style="height:240px;width:auto;display:block;margin:0 auto">
-      </div>
-      <div style="color:#e6edf3;font-size:16px;font-weight:700;margin-bottom:4px">لوحة الإدارة</div>
-      <div style="color:#8b949e;font-size:12px">الهيئة العامة للطرق — منطقة حائل</div>
-    </div>
-    <input id="pin-input" type="password" placeholder="أدخل رمز الدخول"
-      maxlength="10" autocomplete="off"
-      style="
-        width:100%;background:#0d1117;border:1px solid #30363d;
-        color:#e6edf3;padding:12px 16px;border-radius:10px;
-        font-size:18px;text-align:center;letter-spacing:6px;
-        outline:none;margin-bottom:12px;font-family:inherit;transition:border .2s;
-      "
-      oninput="this.style.borderColor='#30363d';document.getElementById('login-err').style.display='none'"
-      onkeydown="if(event.key==='Enter')checkPin()"
-    >
-    <div id="login-err" style="color:#f85149;font-size:12px;margin-bottom:10px;display:none">❌ رمز الدخول غير صحيح</div>
-    <button onclick="checkPin()" style="
-      width:100%;background:#58a6ff;color:#000;border:none;
-      padding:12px;border-radius:10px;font-size:14px;font-weight:700;
-      cursor:pointer;font-family:inherit;transition:background .2s;
-    " onmouseover="this.style.background='#79bbff'" onmouseout="this.style.background='#58a6ff'">دخول</button>
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <img src="logo.svg" alt="الهيئة العامة للطرق">
+    <h1>لوحة الإدارة</h1>
+    <p>حوادث السلامة المرورية — منطقة حائل</p>
+    <input id="pin-input" type="password" inputmode="numeric" placeholder="••••" autocomplete="off"
+      onkeydown="if(event.key==='Enter')checkPin()">
+    <div id="login-err">❌ رمز الدخول غير صحيح</div>
+    <div id="login-note">⚠️ تعذّر الاتصال بقاعدة البيانات — تم التحقق محلياً</div>
+    <button class="login-btn" id="login-btn" onclick="checkPin()">دخول</button>
   </div>
 </div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <img src="logo.svg" alt="شعار">
+    <h1>⚙️ لوحة الإدارة — حوادث السلامة المرورية</h1>
+    <a class="hbtn" href="index.html">📊 لوحة التحكم</a>
+    <button class="hbtn" onclick="logout()">🚪 خروج</button>
+  </header>
+
+  <div id="stats">
+    <div class="stat"><div class="k">إجمالي السجلات</div><div class="v" id="s-total">0</div></div>
+    <div class="stat"><div class="k">الوفيات</div><div class="v" id="s-deaths" style="color:#f28b8b">0</div></div>
+    <div class="stat"><div class="k">الإصابات</div><div class="v" id="s-injuries" style="color:#f0a480">0</div></div>
+    <div class="stat"><div class="k">مصدر البيانات</div><div class="v" id="s-source" style="font-size:13px;padding-top:6px">—</div></div>
+  </div>
+
+  <div class="alert warn" style="display:block">
+    💡 <b>تنبيه:</b> التعديلات تُحفظ في متصفحك (localStorage). لتحديث الموقع المنشور: صدّر JSON ثم ارفع
+    <code>incidents_data.json</code> على GitHub.
+  </div>
+
+  <!-- Add / edit incident -->
+  <div class="card">
+    <h2>➕ <span id="form-title">إضافة حادث جديد</span><span class="grow"></span>
+      <button class="btn btn-ghost" id="cancel-edit" style="display:none" onclick="cancelEdit()">إلغاء التعديل</button>
+    </h2>
+    <div class="form-grid">
+      <div class="fg"><label>التاريخ *</label><input type="date" id="f-date"></div>
+      <div class="fg"><label>الوقت</label><input type="time" id="f-time"></div>
+      <div class="fg"><label>العقد</label>
+        <select id="f-contract"><option value="">—</option><option>601</option><option>602</option><option>603</option><option>604</option></select></div>
+      <div class="fg"><label>رقم الطريق</label><input id="f-road-num" placeholder="65"></div>
+      <div class="fg full" style="grid-column:span 2"><label>اسم الطريق *</label><input id="f-road" list="road-list" placeholder="مثال: حائل / القصيم السريع"><datalist id="road-list"></datalist></div>
+      <div class="fg"><label>العلامة الكيلومترية</label><input id="f-km" placeholder="716+500" dir="ltr"></div>
+      <div class="fg"><label>الاتجاه</label>
+        <select id="f-direction"><option value="">—</option><option>رئيسي</option><option>عكسي</option><option>معاكس</option></select></div>
+      <div class="fg"><label>نوع المركبة</label><input id="f-vehicle" placeholder="اكسنت"></div>
+      <div class="fg"><label>رقم اللوحة</label><input id="f-plate" dir="ltr"></div>
+      <div class="fg"><label>الوفيات</label><input type="number" id="f-deaths" min="0" value="0"></div>
+      <div class="fg"><label>الإصابات</label><input type="number" id="f-injuries" min="0" value="0"></div>
+      <div class="fg"><label>حالة الطقس</label>
+        <select id="f-weather"><option value="">—</option><option>صحو</option><option>غائم</option><option>ممطر</option></select></div>
+      <div class="fg"><label>فئة السبب</label>
+        <select id="f-cause-cat"><option value="">—</option><option>عدم الانتباه</option><option>انحراف المركبة</option>
+          <option>انفجار الإطار</option><option>صدم حيوان سائب</option><option>عطل فني</option><option>تجاوز خاطئ</option><option>النعاس</option></select></div>
+      <div class="fg" style="grid-column:span 2"><label>الجهة المباشرة</label><input id="f-authority" list="auth-list" placeholder="أمن الطرق - …"><datalist id="auth-list"></datalist></div>
+      <div class="fg full"><label>وصف السبب / التلفيات</label><textarea id="f-cause" rows="2"></textarea></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button class="btn btn-success" id="save-btn" onclick="saveIncident()">💾 حفظ الحادث</button>
+    </div>
+  </div>
+
+  <!-- Data table + tools -->
+  <div class="card">
+    <h2>📋 السجلات <span style="color:var(--muted);font-size:11px;font-weight:400" id="tbl-info"></span><span class="grow"></span></h2>
+    <div class="tools">
+      <input id="search-inp" placeholder="🔍 بحث بالطريق / التاريخ / السبب…" oninput="renderRows()">
+      <button class="btn btn-ghost" onclick="exportJSON()">⬇ تصدير JSON</button>
+      <button class="btn btn-ghost" onclick="exportCSV()">⬇ تصدير CSV</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">⬆ استيراد JSON</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(this)">
+      <button class="btn btn-danger" onclick="resetLocal()">↺ استرجاع النسخة المنشورة</button>
+    </div>
+    <div id="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>التاريخ</th><th>الطريق</th><th>العقد</th><th>الكيلو</th><th>المركبة</th>
+          <th>وفيات</th><th>إصابات</th><th>السبب</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PIN management (admin only) -->
+  <div class="card" id="pin-card">
+    <h2>🔐 إدارة الأرقام السرية <span style="font-size:10px;color:var(--muted);font-weight:400">(للمدير فقط — تتطلب اتصالاً بقاعدة البيانات)</span></h2>
+    <div id="pin-gate">
+      <div style="display:flex;gap:8px;max-width:360px">
+        <input class="f-inp" type="password" id="gate-pin" placeholder="أدخل رقم المدير" style="flex:1;padding:9px 12px;border-radius:9px;border:1px solid var(--grid);background:var(--surface-2);color:var(--text);outline:none"
+          onkeydown="if(event.key==='Enter')verifyGate()">
+        <button class="btn btn-primary" onclick="verifyGate()">تحقق</button>
+      </div>
+      <div class="alert" id="gate-alert" style="margin-top:10px"></div>
+    </div>
+    <div id="pin-mgmt" style="display:none">
+      <div class="alert" id="pin-alert"></div>
+      <div id="pin-list" style="margin-bottom:16px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end">
+        <div class="fg"><label>اسم المستخدم</label><input id="new-pin-name" placeholder="مهندس السلامة" maxlength="50"></div>
+        <div class="fg"><label>الرقم السري (٤+ أرقام)</label><input type="password" id="new-pin" maxlength="20"></div>
+        <div class="fg"><label>تأكيد الرقم</label><input type="password" id="new-pin-confirm" maxlength="20"
+          onkeydown="if(event.key==='Enter')addPin()"></div>
+        <button class="btn btn-success" onclick="addPin()">➕ إضافة</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+/* ═══════ AUTH — Supabase + local fallback (نفس نظام لوحة التحكم) ═══════ */
 const SUPA_URL = 'https://aettyehwguheswrrpryi.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFldHR5ZWh3Z3VoZXN3cnJwcnlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NjYyODksImV4cCI6MjA5NDI0MjI4OX0.HJ_HP6g6enaBh32aO0fTEJnWX2tr4RgvHth_bK1fuk4';
-const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+let supa=null; try{ supa=window.supabase.createClient(SUPA_URL,SUPA_KEY); }catch(e){}
 
-async function checkPin() {
-  const val = document.getElementById('pin-input').value.trim();
-  if (!val) return;
-  const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
-  const hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  const { data } = await supa.from('users').select('role').eq('pin_hash', hash).maybeSingle();
-  if (data) {
-    sessionStorage.setItem('auth_hash', hash);
-    sessionStorage.setItem('auth_role', data.role);
-    sessionStorage.setItem('auth', '1');
-    document.getElementById('login-screen').style.display = 'none';
-  } else {
-    document.getElementById('login-err').style.display = 'block';
-    document.getElementById('pin-input').style.borderColor = '#f85149';
-    document.getElementById('pin-input').value = '';
-    document.getElementById('pin-input').focus();
-  }
-}
-if (sessionStorage.getItem('auth') === '1') {
-  document.getElementById('login-screen').style.display = 'none';
-}
-document.getElementById('pin-input').focus();
-</script>
+const FALLBACK_USERS = {
+  '6c80cf1e44d265f12435bf5b72b846543dcc8e524319a16037fb37190fa17b65': 'admin',
+  '10768c26fcd6821ec7ccac19dbb327d64ae07e9e53579db4c27b55b246eccfc7': 'user',
+  '4d35400212c48af20364bce423922d2dc6799495359720460138cc6a6849ff7c': 'user',
+  'f14e5d1984c9b8d75fa57ccdfbbda927a6a7fd5b02248ae949db7bc14e846f2b': 'user',
+  '6dc0836503e959579d293d55688b76f3fd10e7ba8ce4aa042300872245890608': 'user',
+};
 
-<div class="topbar">
-  <div class="tb-left">
-    <div class="tb-logo">
-      <img src="logo.svg" alt="الهيئة العامة للطرق">
-    </div>
-    <div>
-      <div class="tb-title">لوحة إدارة البيانات — حوادث السلامة</div>
-      <div class="tb-sub">الهيئة العامة للطرق | منطقة حائل</div>
-    </div>
-  </div>
-  <div style="display:flex;gap:8px">
-    <button class="btn btn-outline" onclick="downloadBackup()">💾 نسخ احتياطية</button>
-    <a href="index.html" class="btn btn-primary">📊 لوحة التحكم</a>
-    <button class="btn" onclick="logout()"
-      style="background:transparent;border:1px solid var(--red);color:var(--red)"
-      onmouseover="this.style.background='rgba(248,81,73,.1)'"
-      onmouseout="this.style.background='transparent'">
-      ⏻ خروج
-    </button>
-  </div>
-</div>
-
-<!-- Stats Bar -->
-<div class="stats-bar">
-  <div class="stat-item"><span class="stat-val s-blue" id="sb-total">—</span> إجمالي الحوادث</div>
-  <div class="stat-item"><span class="stat-val s-red" id="sb-deaths">—</span> وفيات</div>
-  <div class="stat-item"><span class="stat-val s-orange" id="sb-injuries">—</span> إصابات</div>
-  <div class="stat-item"><span class="stat-val s-green" id="sb-roads">—</span> طريق مختلف</div>
-  <div style="margin-right:auto;font-size:11px;color:var(--muted)">
-    آخر تحديث: <span id="sb-date" style="color:var(--text)">—</span>
-  </div>
-</div>
-
-<div class="layout">
-
-  <!-- ADD INCIDENT FORM -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">➕ إضافة حادث جديد</div>
-      <div class="tabs" style="margin:0">
-        <button class="tab active" onclick="setFormMode('add')">إضافة</button>
-        <button class="tab" id="edit-tab" onclick="setFormMode('edit')" style="display:none">تعديل</button>
-      </div>
-    </div>
-    <div class="card-body">
-      <div id="form-alert" class="alert alert-success">✅ <span id="form-alert-msg"></span></div>
-
-      <div class="form-grid">
-        <div class="fg">
-          <label>تاريخ الحادث *</label>
-          <input type="date" id="f-date" required>
-        </div>
-        <div class="fg">
-          <label>وقت الحادث</label>
-          <input type="time" id="f-time">
-        </div>
-        <div class="fg">
-          <label>رقم العقد *</label>
-          <select id="f-contract">
-            <option value="601">601</option>
-            <option value="602">602</option>
-            <option value="603">603</option>
-            <option value="604">604</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>اسم الطريق *</label>
-          <input type="text" id="f-road" placeholder="مثال: حائل الجوف" list="road-list">
-          <datalist id="road-list"></datalist>
-        </div>
-        <div class="fg">
-          <label>رقم الطريق</label>
-          <input type="text" id="f-road-num" placeholder="مثال: 65">
-        </div>
-        <div class="fg">
-          <label>العلامة الكيلومترية</label>
-          <input type="text" id="f-km" placeholder="مثال: 125+000">
-        </div>
-        <div class="fg">
-          <label>الاتجاه</label>
-          <select id="f-direction">
-            <option value="الرئيسي">الرئيسي</option>
-            <option value="العكسي">العكسي</option>
-            <option value="المعاكس">المعاكس</option>
-            <option value="كلا الاتجاهين">كلا الاتجاهين</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>نوع المركبة</label>
-          <input type="text" id="f-vehicle" placeholder="مثال: هايلكس، تريلا" list="vehicle-list">
-          <datalist id="vehicle-list"></datalist>
-        </div>
-        <div class="fg">
-          <label>رقم اللوحة</label>
-          <input type="text" id="f-plate" placeholder="مثال: أ ب ت 1234">
-        </div>
-        <div class="fg">
-          <label>حالة الطقس</label>
-          <select id="f-weather">
-            <option value="صحو">صحو</option>
-            <option value="غائم">غائم</option>
-            <option value="ممطر">ممطر</option>
-            <option value="عاصفة رملية">عاصفة رملية</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>عدد الوفيات</label>
-          <input type="number" id="f-deaths" value="0" min="0">
-        </div>
-        <div class="fg">
-          <label>عدد الإصابات</label>
-          <input type="number" id="f-injuries" value="0" min="0">
-        </div>
-      </div>
-
-      <div class="fg" style="margin-top:12px">
-        <label>التلفيات المادية</label>
-        <input type="text" id="f-damage" placeholder="وصف التلفيات أو 'لايوجد'">
-      </div>
-      <div class="fg" style="margin-top:12px">
-        <label>سبب الحادث *</label>
-        <textarea id="f-cause" placeholder="وصف سبب الحادث بالتفصيل..."></textarea>
-      </div>
-      <div class="fg" style="margin-top:12px">
-        <label>الجهة المباشرة</label>
-        <input type="text" id="f-authority" placeholder="مثال: أمن الطرق - الحليفة" list="auth-list">
-        <datalist id="auth-list"></datalist>
-      </div>
-
-      <div class="form-actions">
-        <button class="btn btn-outline" onclick="clearForm()">🗑️ مسح</button>
-        <button class="btn btn-success" onclick="saveIncident()" id="save-btn">💾 حفظ الحادث</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- IMPORT FROM EXCEL -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">📂 استيراد من Excel / JSON</div>
-    </div>
-    <div class="card-body">
-      <div id="import-alert" class="alert alert-success"><span id="import-msg"></span></div>
-
-      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
-        <div class="dz-icon">📄</div>
-        <div class="dz-label">اسحب ملف هنا أو انقر للاختيار</div>
-        <div class="dz-sub">يدعم: JSON فقط (قم بتصدير من لوحة التحكم أولاً)</div>
-      </div>
-      <input type="file" id="file-input" accept=".json" onchange="importFile(event)">
-
-      <div class="progress" id="import-progress" style="display:none">
-        <div class="progress-fill" id="import-fill" style="width:0%"></div>
-      </div>
-
-      <div id="import-preview" style="margin-top:16px;display:none">
-        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">معاينة البيانات المستوردة:</div>
-        <div style="font-size:12px;color:var(--text)" id="import-stats"></div>
-        <div class="form-actions">
-          <button class="btn btn-outline" onclick="cancelImport()">إلغاء</button>
-          <button class="btn btn-success" onclick="confirmImport()">✅ تأكيد الاستيراد</button>
-        </div>
-      </div>
-
-      <hr style="border-color:var(--border);margin:20px 0">
-
-      <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--muted)">🔧 إجراءات البيانات</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn btn-outline" style="justify-content:flex-start" onclick="downloadBackup()">
-          💾 تنزيل نسخة احتياطية (JSON)
-        </button>
-        <button class="btn btn-outline" style="justify-content:flex-start" onclick="exportCSV()">
-          📥 تصدير إلى CSV
-        </button>
-        <button class="btn btn-danger" style="justify-content:flex-start" onclick="confirmClear()">
-          ⚠️ مسح جميع البيانات
-        </button>
-      </div>
-
-      <div style="margin-top:20px;padding:12px;background:rgba(88,166,255,.05);border:1px solid rgba(88,166,255,.2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.8">
-        <div style="font-weight:600;color:var(--accent);margin-bottom:4px">💡 طريقة إضافة بيانات Excel جديدة:</div>
-        <div>1. افتح ملف Excel الجديد</div>
-        <div>2. استخدم سكريبت التحويل: <code style="background:var(--card);padding:1px 5px;border-radius:4px">python3 convert.py</code></div>
-        <div>3. استورد الملف incidents_data.json الناتج</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PIN MANAGEMENT -->
-  <div class="card" id="pin-mgmt-card">
-    <div class="card-header">
-      <div class="card-title">🔐 إدارة الأرقام السرية</div>
-    </div>
-    <div class="card-body">
-
-      <!-- شاشة تأكيد الهوية -->
-      <div id="pin-auth-gate">
-        <div style="text-align:center;padding:10px 0 16px">
-          <div style="font-size:32px;margin-bottom:8px">🔒</div>
-          <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
-            هذا القسم مخصص للمدير فقط.
-          </div>
-          <div style="display:flex;gap:8px;max-width:280px;margin:0 auto">
-            <input type="password" id="gate-pin" placeholder="رقم المدير"
-              maxlength="10" autocomplete="off" style="text-align:center;letter-spacing:4px;font-size:16px"
-              onkeydown="if(event.key==='Enter')verifyGate()">
-            <button class="btn btn-primary" onclick="verifyGate()">دخول</button>
-          </div>
-          <div id="gate-err" style="color:var(--red);font-size:12px;margin-top:8px;display:none">❌ الرقم غير صحيح</div>
-        </div>
-      </div>
-
-      <!-- المحتوى الفعلي (مخفي حتى التحقق) -->
-      <div id="pin-mgmt-content" style="display:none">
-        <div id="pin-alert" class="alert"></div>
-
-        <div style="margin-bottom:16px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">الأرقام السرية الحالية</div>
-          <div id="pin-list" style="display:flex;flex-direction:column;gap:6px"></div>
-        </div>
-
-        <hr style="border-color:var(--border);margin:16px 0">
-
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">إضافة رقم سري جديد</div>
-        <div style="margin-bottom:8px">
-          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">الاسم / الوصف</label>
-          <input type="text" id="new-pin-name" placeholder="مثال: مهندس السلامة" maxlength="50" autocomplete="off">
-        </div>
-        <div style="display:flex;gap:8px;align-items:flex-end">
-          <div style="flex:1">
-            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">الرقم السري</label>
-            <input type="password" id="new-pin" placeholder="أدخل الرقم السري الجديد"
-              maxlength="20" autocomplete="off" onkeydown="if(event.key==='Enter')addPin()">
-          </div>
-          <div style="flex:1">
-            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">تأكيد الرقم</label>
-            <input type="password" id="new-pin-confirm" placeholder="أعد إدخال الرقم"
-              maxlength="20" autocomplete="off" onkeydown="if(event.key==='Enter')addPin()">
-          </div>
-          <button class="btn btn-success" onclick="addPin()" style="height:36px">➕ إضافة</button>
-        </div>
-        <div style="margin-top:8px;font-size:11px;color:var(--muted)">
-          💡 الأرقام السرية مشفّرة ولا تُحفظ كنص واضح
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- DATA TABLE -->
-  <div class="card full-width">
-    <div class="card-header">
-      <div class="card-title">📋 سجل الحوادث (<span id="tbl-total">—</span>)</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" id="tbl-search" placeholder="🔍 بحث..." style="width:180px" oninput="renderAdminTable()">
-        <select id="tbl-filter-contract" onchange="renderAdminTable()" style="width:120px">
-          <option value="">كل العقود</option>
-          <option value="601">عقد 601</option>
-          <option value="602">عقد 602</option>
-          <option value="603">عقد 603</option>
-          <option value="604">عقد 604</option>
-        </select>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>التاريخ</th>
-            <th>الطريق</th>
-            <th>العقد</th>
-            <th>الكيلو</th>
-            <th>المركبة</th>
-            <th>الطقس</th>
-            <th>وفيات</th>
-            <th>إصابات</th>
-            <th>السبب (مختصر)</th>
-            <th>الجهة</th>
-            <th>إجراءات</th>
-          </tr>
-        </thead>
-        <tbody id="admin-tbody"></tbody>
-      </table>
-    </div>
-    <div id="admin-pagination" style="display:flex;gap:6px;padding:12px;align-items:center;justify-content:center;border-top:1px solid var(--border)"></div>
-  </div>
-
-</div>
-
-<!-- CONFIRM DIALOG -->
-<div id="confirm-dialog">
-  <div class="dialog-box">
-    <div class="dialog-title" id="dlg-title">تأكيد الإجراء</div>
-    <div class="dialog-msg" id="dlg-msg">هل أنت متأكد؟</div>
-    <div class="dialog-actions">
-      <button class="btn btn-outline" onclick="closeDlg()">إلغاء</button>
-      <button class="btn btn-danger" id="dlg-confirm-btn" onclick="dlgAction()">تأكيد</button>
-    </div>
-  </div>
-</div>
-
-<div id="notify"></div>
-
-<script>
-let DB = [];
-let editIdx = null;
-let importPending = null;
-let adminPage = 1;
-const PAGE = 25;
-let dlgActionFn = null;
-
-// ═══════════════════════════════
-async function init() {
-  try {
-    const r = await fetch('incidents_data.json?v=' + Date.now());
-    DB = await r.json();
-    updateStats();
-    renderAdminTable();
-    buildDataLists();
-  } catch(e) {
-    showAlert('import-alert', 'فشل تحميل البيانات!', 'error');
-  }
-}
-
-function buildDataLists() {
-  const roads = [...new Set(DB.map(d=>d.road_name).filter(Boolean))].sort();
-  document.getElementById('road-list').innerHTML = roads.map(r => `<option value="${r}">`).join('');
-  const vehicles = [...new Set(DB.map(d=>d.vehicle_type).filter(Boolean))].sort();
-  document.getElementById('vehicle-list').innerHTML = vehicles.map(v => `<option value="${v}">`).join('');
-  const auths = [...new Set(DB.map(d=>d.authority).filter(Boolean))].sort();
-  document.getElementById('auth-list').innerHTML = auths.map(a => `<option value="${a}">`).join('');
-}
-
-function updateStats() {
-  document.getElementById('sb-total').textContent = DB.length;
-  document.getElementById('sb-deaths').textContent = DB.reduce((s,d)=>s+d.deaths,0);
-  document.getElementById('sb-injuries').textContent = DB.reduce((s,d)=>s+d.injuries,0);
-  document.getElementById('sb-roads').textContent = new Set(DB.map(d=>d.road_name).filter(Boolean)).size;
-  const dates = DB.map(d=>d.date).filter(Boolean).sort();
-  document.getElementById('sb-date').textContent = dates[dates.length-1]||'—';
-  document.getElementById('tbl-total').textContent = DB.length;
-}
-
-// ═══════════════════════════════
-// Form
-// ═══════════════════════════════
-function clearForm() {
-  ['f-date','f-time','f-road','f-road-num','f-km','f-plate','f-damage','f-cause','f-authority'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('f-deaths').value = 0;
-  document.getElementById('f-injuries').value = 0;
-  document.getElementById('f-contract').value = '601';
-  document.getElementById('f-direction').value = 'الرئيسي';
-  document.getElementById('f-weather').value = 'صحو';
-  editIdx = null;
-  document.getElementById('save-btn').textContent = '💾 حفظ الحادث';
-  setFormMode('add');
-}
-
-function setFormMode(mode) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  event?.target?.classList.add('active');
-}
-
-function fillForm(idx) {
-  const d = DB[idx];
-  document.getElementById('f-date').value = d.date;
-  document.getElementById('f-time').value = d.time || '';
-  document.getElementById('f-contract').value = d.contract;
-  document.getElementById('f-road').value = d.road_name;
-  document.getElementById('f-road-num').value = d.road_number;
-  document.getElementById('f-km').value = d.km_mark;
-  document.getElementById('f-direction').value = d.direction || 'الرئيسي';
-  document.getElementById('f-vehicle').value = d.vehicle_type;
-  document.getElementById('f-plate').value = d.plate;
-  document.getElementById('f-weather').value = d.weather;
-  document.getElementById('f-deaths').value = d.deaths;
-  document.getElementById('f-injuries').value = d.injuries;
-  document.getElementById('f-damage').value = d.damage;
-  document.getElementById('f-cause').value = d.cause;
-  document.getElementById('f-authority').value = d.authority;
-
-  editIdx = idx;
-  document.getElementById('save-btn').textContent = '✏️ حفظ التعديل';
-  document.getElementById('edit-tab').style.display = 'block';
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('edit-tab').classList.add('active');
-  document.querySelector('.card-body').scrollIntoView({behavior:'smooth'});
-}
-
-function saveIncident() {
-  const date = document.getElementById('f-date').value;
-  const road = document.getElementById('f-road').value.trim();
-  const cause = document.getElementById('f-cause').value.trim();
-
-  if (!date || !road || !cause) {
-    showAlert('form-alert', 'يرجى ملء الحقول المطلوبة (التاريخ، الطريق، السبب)', 'warn');
-    return;
-  }
-
-  const time = document.getElementById('f-time').value;
-  const hour = time ? parseInt(time.split(':')[0]) : -1;
-  const MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-  const DAYS_AR = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-
-  let month = 0, month_name = '', year = 0, week_day = '';
-  try {
-    const dt = new Date(date);
-    month = dt.getMonth() + 1;
-    month_name = MONTHS_AR[dt.getMonth()];
-    year = dt.getFullYear();
-    week_day = DAYS_AR[dt.getDay()];
-  } catch(e) {}
-
-  const inc = {
-    contract: document.getElementById('f-contract').value,
-    road_name: road,
-    road_number: document.getElementById('f-road-num').value.trim(),
-    km_mark: document.getElementById('f-km').value.trim(),
-    direction: document.getElementById('f-direction').value,
-    vehicle_type: document.getElementById('f-vehicle').value.trim(),
-    plate: document.getElementById('f-plate').value.trim(),
-    damage: document.getElementById('f-damage').value.trim() || 'لايوجد',
-    injuries: parseInt(document.getElementById('f-injuries').value) || 0,
-    deaths: parseInt(document.getElementById('f-deaths').value) || 0,
-    cause: cause,
-    authority: document.getElementById('f-authority').value.trim(),
-    weather: document.getElementById('f-weather').value,
-    date: date,
-    time: time,
-    month, month_name, year, week_day, hour,
-    lat: 27.52 + (Math.random()-0.5)*0.5,
-    lng: 41.69 + (Math.random()-0.5)*0.5,
-  };
-
-  if (editIdx !== null) {
-    DB[editIdx] = { ...DB[editIdx], ...inc };
-    showAlert('form-alert', 'تم تعديل الحادث بنجاح!', 'success');
-  } else {
-    DB.unshift(inc);
-    showAlert('form-alert', 'تم إضافة الحادث بنجاح!', 'success');
-  }
-
-  saveDB();
-  clearForm();
-  updateStats();
-  renderAdminTable();
-  buildDataLists();
-}
-
-// ═══════════════════════════════
-// Table
-// ═══════════════════════════════
-function renderAdminTable() {
-  const search = (document.getElementById('tbl-search').value || '').toLowerCase();
-  const contract = document.getElementById('tbl-filter-contract').value;
-
-  let rows = DB.filter(d => {
-    if (contract && d.contract !== contract) return false;
-    if (search && !JSON.stringify(d).toLowerCase().includes(search)) return false;
-    return true;
-  });
-
-  const total = rows.length;
-  const totalPages = Math.max(1, Math.ceil(total/PAGE));
-  if (adminPage > totalPages) adminPage = 1;
-  const page = rows.slice((adminPage-1)*PAGE, adminPage*PAGE);
-
-  document.getElementById('tbl-total').textContent = total;
-
-  document.getElementById('admin-tbody').innerHTML = page.map((d, i) => `
-    <tr>
-      <td style="color:var(--muted)">${(adminPage-1)*PAGE+i+1}</td>
-      <td>${d.date}</td>
-      <td title="${d.road_name}" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.road_name}</td>
-      <td><span class="badge b-blue">${d.contract}</span></td>
-      <td style="direction:ltr;text-align:right;color:var(--muted)">${d.km_mark}</td>
-      <td>${(d.vehicle_type||'').slice(0,12)}</td>
-      <td>${d.weather}</td>
-      <td>${d.deaths>0?`<span class="badge b-red">${d.deaths}</span>`:`<span style="color:var(--muted)">0</span>`}</td>
-      <td>${d.injuries>0?`<span class="badge b-orange" style="background:rgba(240,136,62,.15);color:var(--orange)">${d.injuries}</span>`:`<span style="color:var(--muted)">0</span>`}</td>
-      <td title="${d.cause}" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.cause.slice(0,40)}</td>
-      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(d.authority||'').slice(0,20)}</td>
-      <td>
-        <div style="display:flex;gap:4px">
-          <button class="btn btn-outline" style="padding:3px 8px;font-size:11px" onclick="fillForm(${DB.indexOf(d)})">✏️</button>
-          <button class="btn btn-danger" style="padding:3px 8px;font-size:11px" onclick="deleteIncident(${DB.indexOf(d)})">🗑️</button>
-        </div>
-      </td>
-    </tr>
-  `).join('') || `<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--muted)">لا توجد بيانات</td></tr>`;
-
-  // Pagination
-  const pag = document.getElementById('admin-pagination');
-  pag.innerHTML = '';
-  if (totalPages > 1) {
-    const mkBtn = (lbl, pg, active=false, dis=false) => {
-      const b = document.createElement('button');
-      b.className = `btn ${active?'btn-primary':'btn-outline'}`;
-      b.textContent = lbl; b.disabled = dis;
-      b.style.minWidth = '34px'; b.style.padding = '4px 8px';
-      b.onclick = () => { adminPage = pg; renderAdminTable(); };
-      return b;
-    };
-    pag.appendChild(mkBtn('◀', adminPage-1, false, adminPage===1));
-    const s = Math.max(1, adminPage-2), e = Math.min(totalPages, adminPage+2);
-    for (let p=s;p<=e;p++) pag.appendChild(mkBtn(p, p, p===adminPage));
-    pag.appendChild(mkBtn('▶', adminPage+1, false, adminPage===totalPages));
-    const info = document.createElement('span');
-    info.style.cssText = 'font-size:11px;color:var(--muted);margin-right:8px';
-    info.textContent = `${adminPage}/${totalPages} — إجمالي: ${total}`;
-    pag.appendChild(info);
-  }
-}
-
-function deleteIncident(idx) {
-  dlgActionFn = () => {
-    DB.splice(idx, 1);
-    saveDB();
-    updateStats();
-    renderAdminTable();
-    notify('تم حذف الحادث');
-    closeDlg();
-  };
-  document.getElementById('dlg-title').textContent = 'حذف الحادث';
-  document.getElementById('dlg-msg').textContent = 'سيتم حذف هذا الحادث نهائياً. هل أنت متأكد؟';
-  document.getElementById('confirm-dialog').classList.add('open');
-}
-
-// ═══════════════════════════════
-// Import / Export
-// ═══════════════════════════════
-function dragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag'); }
-function dragLeave() { document.getElementById('drop-zone').classList.remove('drag'); }
-function dropFile(e) { e.preventDefault(); dragLeave(); const f = e.dataTransfer.files[0]; if(f) processFile(f); }
-function importFile(e) { const f = e.target.files[0]; if(f) processFile(f); }
-
-function processFile(file) {
-  if (!file.name.endsWith('.json')) {
-    showAlert('import-alert', 'يُقبل ملف JSON فقط. صدّر البيانات من لوحة التحكم أولاً.', 'error');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!Array.isArray(data)) throw new Error('تنسيق غير صحيح');
-      importPending = data;
-      const deaths = data.reduce((s,d)=>s+d.deaths,0);
-      const injuries = data.reduce((s,d)=>s+d.injuries,0);
-      document.getElementById('import-stats').innerHTML = `
-        <b>${data.length}</b> حادث، <b style="color:var(--red)">${deaths}</b> وفاة، <b style="color:var(--orange)">${injuries}</b> إصابة
-      `;
-      document.getElementById('import-preview').style.display = 'block';
-      showAlert('import-alert', `تم قراءة ${data.length} سجل. راجع وأكد الاستيراد.`, 'success');
-    } catch(err) {
-      showAlert('import-alert', 'خطأ في قراءة الملف: ' + err.message, 'error');
-    }
-  };
-  reader.readAsText(file);
-}
-
-function confirmImport() {
-  if (!importPending) return;
-  const mergeNew = importPending.filter(imp =>
-    !DB.some(d => d.date===imp.date && d.road_name===imp.road_name && d.km_mark===imp.km_mark)
-  );
-  DB = [...DB, ...mergeNew];
-  saveDB();
-  updateStats();
-  renderAdminTable();
-  buildDataLists();
-  showAlert('import-alert', `تم استيراد ${mergeNew.length} سجل جديد (تم تجاهل ${importPending.length-mergeNew.length} مكرر)`, 'success');
-  importPending = null;
-  document.getElementById('import-preview').style.display = 'none';
-}
-
-function cancelImport() {
-  importPending = null;
-  document.getElementById('import-preview').style.display = 'none';
-}
-
-function downloadBackup() {
-  const json = JSON.stringify(DB, null, 2);
-  const blob = new Blob([json], { type:'application/json' });
-  const a = document.createElement('a');
-  const d = new Date().toISOString().split('T')[0];
-  a.href = URL.createObjectURL(blob); a.download = `safety_backup_${d}.json`; a.click();
-  notify('تم تنزيل النسخة الاحتياطية');
-}
-
-function exportCSV() {
-  const h = ['التاريخ','الطريق','رقم العقد','العلامة','الاتجاه','المركبة','اللوحة','الطقس','وفيات','إصابات','السبب','الجهة'];
-  const rows = DB.map(d => [
-    d.date, d.road_name, d.contract, d.km_mark, d.direction,
-    d.vehicle_type, d.plate, d.weather, d.deaths, d.injuries,
-    (d.cause||'').replace(/,/g,'؛'), d.authority
-  ]);
-  const csv = '﻿' + [h,...rows].map(r=>r.join(',')).join('\n');
-  const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = 'incidents_export.csv'; a.click();
-  notify('تم التصدير إلى CSV');
-}
-
-function confirmClear() {
-  dlgActionFn = () => {
-    DB = [];
-    saveDB();
-    updateStats();
-    renderAdminTable();
-    notify('تم مسح جميع البيانات');
-    closeDlg();
-  };
-  document.getElementById('dlg-title').textContent = '⚠️ مسح جميع البيانات';
-  document.getElementById('dlg-msg').textContent = 'سيتم حذف جميع البيانات نهائياً. هذا الإجراء لا يمكن التراجع عنه!';
-  document.getElementById('confirm-dialog').classList.add('open');
-}
-
-// ═══════════════════════════════
-// Save / Persist
-// ═══════════════════════════════
-function saveDB() {
-  // In a real deployment, this would POST to a server API
-  // For local/static hosting, we save to localStorage as fallback
-  try {
-    localStorage.setItem('safety_incidents_db', JSON.stringify(DB));
-    notify('تم الحفظ في المتصفح (localStorage)');
-  } catch(e) {
-    notify('فشل الحفظ: ' + e.message, true);
-  }
-  // Also update the in-memory cache
-  window._dbUpdated = true;
-}
-
-// ═══════════════════════════════
-// UI Helpers
-// ═══════════════════════════════
-function showAlert(id, msg, type='success') {
-  const el = document.getElementById(id);
-  const msgEl = document.getElementById(id.replace('-alert','') + '-alert-msg') || el.querySelector('span') || el;
-  el.className = `alert alert-${type} show`;
-  el.innerHTML = (type==='success'?'✅':type==='warn'?'⚠️':'❌') + ' ' + msg;
-  setTimeout(() => el.classList.remove('show'), 4000);
-}
-
-function closeDlg() { document.getElementById('confirm-dialog').classList.remove('open'); }
-function logout() { sessionStorage.removeItem('auth'); location.reload(); }
-
-// ═══════════════════════════════
-// PIN Management — Supabase
-// ═══════════════════════════════
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-async function renderPinList() {
-  const list = document.getElementById('pin-list');
-  list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted)">جاري التحميل...</div>';
-  const { data: users, error } = await supa.from('users').select('id, name, role').order('id');
-  if (error || !users) {
-    list.innerHTML = '<div style="color:var(--red);text-align:center;padding:8px">❌ فشل تحميل المستخدمين</div>';
-    return;
-  }
-  let html = '';
-  users.forEach(u => {
-    const isAdmin = u.role === 'admin';
-    html += `
-      <div style="display:flex;align-items:center;justify-content:space-between;
-        background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px">${isAdmin ? '🔒' : '🔑'}</span>
-          <span style="font-size:12px;font-family:monospace">••••  ${u.name}</span>
-          ${isAdmin ? '<span style="font-size:10px;color:var(--green);background:rgba(63,185,80,.1);padding:2px 8px;border-radius:8px">مدير</span>' : ''}
-        </div>
-        ${isAdmin
-          ? '<span style="font-size:10px;color:var(--muted);background:var(--card);padding:2px 8px;border-radius:8px">محمي</span>'
-          : `<button onclick="removePin(${u.id})" class="btn btn-danger" style="padding:3px 10px;font-size:11px">🗑️ حذف</button>`}
-      </div>`;
-  });
-  list.innerHTML = html || '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px">لا يوجد مستخدمون</div>';
-}
-
-async function addPin() {
-  const pin  = document.getElementById('new-pin').value.trim();
-  const conf = document.getElementById('new-pin-confirm').value.trim();
-  const name = document.getElementById('new-pin-name').value.trim() || 'مستخدم جديد';
-
-  if (!pin)            { showPinAlert('أدخل الرقم السري', 'warn');                    return; }
-  if (pin.length < 4)  { showPinAlert('الرقم يجب أن يكون 4 أحرف على الأقل', 'warn'); return; }
-  if (pin !== conf)    { showPinAlert('الرقمان غير متطابقين', 'error');               return; }
-
-  const hash      = await sha256(pin);
-  const adminHash = sessionStorage.getItem('auth_hash');
-  const { data, error } = await supa.rpc('add_user', {
-    admin_hash: adminHash, new_name: name, new_pin_hash: hash, new_role: 'user'
-  });
-  if (error || !data) { showPinAlert('فشل الإضافة — الرقم موجود مسبقاً أو لا توجد صلاحية', 'error'); return; }
-
-  document.getElementById('new-pin').value      = '';
-  document.getElementById('new-pin-confirm').value = '';
-  document.getElementById('new-pin-name').value = '';
-  await renderPinList();
-  showPinAlert('تم إضافة المستخدم بنجاح', 'success');
-}
-
-async function removePin(id) {
-  const adminHash = sessionStorage.getItem('auth_hash');
-  const { data } = await supa.rpc('remove_user', { admin_hash: adminHash, target_id: id });
-  if (data) { await renderPinList(); showPinAlert('تم حذف المستخدم', 'success'); }
-  else      { showPinAlert('فشل الحذف', 'error'); }
-}
-
-function showPinAlert(msg, type) {
-  const el = document.getElementById('pin-alert');
-  el.className = `alert alert-${type} show`;
-  el.textContent = (type==='success'?'✅':type==='warn'?'⚠️':'❌') + ' ' + msg;
-  setTimeout(()=>el.classList.remove('show'), 3000);
-}
-
-async function verifyGate() {
-  const val = document.getElementById('gate-pin').value.trim();
-  if (!val) return;
-  const hash = await sha256(val);
-  const { data } = await supa.from('users').select('role').eq('pin_hash', hash).eq('role', 'admin').maybeSingle();
-  if (data) {
-    document.getElementById('pin-auth-gate').style.display    = 'none';
-    document.getElementById('pin-mgmt-content').style.display = 'block';
-    renderPinList();
-  } else {
-    document.getElementById('gate-err').style.display = 'block';
-    document.getElementById('gate-pin').value = '';
-    document.getElementById('gate-pin').focus();
+async function checkPin(){
+  const val=document.getElementById('pin-input').value.trim();
+  if(!val) return;
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true; btn.textContent='جارٍ التحقق…';
+  const hash=await sha256(val);
+  let role=null, offline=false;
+  if(supa){
+    try{
+      const {data,error}=await Promise.race([
+        supa.from('users').select('role').eq('pin_hash',hash).maybeSingle(),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),6000))
+      ]);
+      if(error) throw error;
+      if(data) role=data.role;
+    }catch(e){ offline=true; if(FALLBACK_USERS[hash]) role=FALLBACK_USERS[hash]; }
+  } else if(FALLBACK_USERS[hash]){ offline=true; role=FALLBACK_USERS[hash]; }
+  btn.disabled=false; btn.textContent='دخول';
+  if(role){
+    sessionStorage.setItem('auth','1');
+    sessionStorage.setItem('auth_hash',hash);
+    sessionStorage.setItem('auth_role',role);
+    if(offline) document.getElementById('login-note').style.display='block';
+    enterApp();
+  }else{
+    document.getElementById('login-err').style.display='block';
+    const inp=document.getElementById('pin-input'); inp.value=''; inp.focus();
   }
 }
-function dlgAction() { if (dlgActionFn) dlgActionFn(); }
+function enterApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('ready');
+  loadDB();
+}
+function logout(){ sessionStorage.clear(); location.href='index.html'; }
+document.getElementById('pin-input').addEventListener('input',()=>{
+  document.getElementById('login-err').style.display='none'; });
 
-function notify(msg, isErr=false) {
-  const n = document.getElementById('notify');
-  n.textContent = msg;
-  n.style.cssText = `display:block;background:${isErr?'var(--red)':'var(--green)'};color:#000;font-weight:600;padding:10px 18px;border-radius:8px;font-size:13px;position:fixed;bottom:20px;left:20px;z-index:999`;
-  setTimeout(()=>n.style.display='none', 3000);
+/* ═══════ DATA ═══════ */
+const LS_KEY='safety_incidents_db';
+let DB=[], editIdx=null;
+const nf=n=>n.toLocaleString('ar');
+
+function normDate(s){
+  if(!s) return '';
+  s=String(s).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  let m=s.match(/^(\d{4})\D(\d{1,2})\D(\d{1,2})$/);
+  if(m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m=s.match(/^(\d{1,2})\D+(\d{1,2})\D+(\d{4})$/);
+  if(m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  return s;
 }
 
-document.getElementById('confirm-dialog').addEventListener('click', e => {
-  if (e.target === document.getElementById('confirm-dialog')) closeDlg();
-});
-
-// Load from localStorage if available (for updates saved via admin panel)
-async function init() {
-  try {
-    const r = await fetch('incidents_data.json?v=' + Date.now());
-    let fileData = await r.json();
-
-    const local = localStorage.getItem('safety_incidents_db');
-    if (local) {
-      const localData = JSON.parse(local);
-      if (localData.length >= fileData.length) {
-        DB = localData;
-      } else {
-        DB = fileData;
-        localStorage.setItem('safety_incidents_db', JSON.stringify(DB));
-      }
-    } else {
-      DB = fileData;
-    }
-
-    updateStats();
-    renderAdminTable();
-    buildDataLists();
-  } catch(e) {
-    const local = localStorage.getItem('safety_incidents_db');
-    if (local) {
-      DB = JSON.parse(local);
-      updateStats();
-      renderAdminTable();
-      buildDataLists();
-    } else {
-      showAlert('import-alert', 'فشل تحميل البيانات: ' + e.message, 'error');
-    }
+async function loadDB(){
+  const local=localStorage.getItem(LS_KEY);
+  if(local){
+    try{ DB=JSON.parse(local);
+      document.getElementById('s-source').textContent='نسخة محلية معدّلة';
+    }catch(e){ DB=[]; }
   }
+  if(!DB.length){
+    try{
+      const r=await fetch('incidents_data.json?v='+Date.now());
+      DB=await r.json();
+      document.getElementById('s-source').textContent='الملف المنشور';
+    }catch(e){ toast('فشل تحميل البيانات: '+e.message,true); DB=[]; }
+  }
+  DB.forEach(d=>{ d.date=normDate(d.date); });
+  buildDatalists();
+  refresh();
+}
+function saveDB(){
+  localStorage.setItem(LS_KEY,JSON.stringify(DB));
+  document.getElementById('s-source').textContent='نسخة محلية معدّلة';
+}
+function buildDatalists(){
+  document.getElementById('road-list').innerHTML=
+    [...new Set(DB.map(d=>d.road_name).filter(Boolean))].sort().map(r=>`<option value="${r.replace(/"/g,'&quot;')}">`).join('');
+  document.getElementById('auth-list').innerHTML=
+    [...new Set(DB.map(d=>d.authority).filter(Boolean))].sort().map(a=>`<option value="${a.replace(/"/g,'&quot;')}">`).join('');
+}
+function refresh(){
+  document.getElementById('s-total').textContent=nf(DB.length);
+  document.getElementById('s-deaths').textContent=nf(DB.reduce((s,d)=>s+(d.deaths||0),0));
+  document.getElementById('s-injuries').textContent=nf(DB.reduce((s,d)=>s+(d.injuries||0),0));
+  renderRows();
 }
 
-init();
+/* ═══════ TABLE ═══════ */
+function renderRows(){
+  const q=(document.getElementById('search-inp').value||'').toLowerCase();
+  let rows=DB.map((d,i)=>({d,i}));
+  if(q) rows=rows.filter(({d})=>
+    (d.road_name||'').toLowerCase().includes(q)||
+    (d.date||'').includes(q)||
+    (d.cause||'').toLowerCase().includes(q)||
+    (d.cause_category||'').toLowerCase().includes(q)||
+    (d.vehicle_type||'').toLowerCase().includes(q));
+  rows.sort((a,b)=>(b.d.date||'').localeCompare(a.d.date||''));
+  document.getElementById('tbl-info').textContent=`(${nf(rows.length)}${rows.length>300?' — يعرض أول ٣٠٠':''})`;
+  document.getElementById('rows').innerHTML=rows.slice(0,300).map(({d,i})=>`
+    <tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td>${d.date||'—'} ${d.time||''}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${(d.road_name||'').replace(/"/g,'&quot;')}">${d.road_name||'—'}</td>
+      <td>${d.contract||'—'}</td>
+      <td dir="ltr">${d.km_mark||'—'}</td>
+      <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis">${d.vehicle_type||'—'}</td>
+      <td>${d.deaths>0?`<span class="badge b-red">${nf(d.deaths)}</span>`:'<span class="badge b-zero">٠</span>'}</td>
+      <td>${d.injuries>0?`<span class="badge b-orange">${nf(d.injuries)}</span>`:'<span class="badge b-zero">٠</span>'}</td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis">${d.cause_category||'—'}</td>
+      <td>
+        <button class="row-btn rb-edit" onclick="editIncident(${i})">✏️</button>
+        <button class="row-btn rb-del" onclick="deleteIncident(${i})">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+/* ═══════ CRUD ═══════ */
+const MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const DAYS7=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+
+function readForm(){
+  const date=document.getElementById('f-date').value;
+  const road=document.getElementById('f-road').value.trim();
+  if(!date||!road){ toast('التاريخ واسم الطريق مطلوبان',true); return null; }
+  const dt=new Date(date+'T12:00:00');
+  const time=document.getElementById('f-time').value;
+  return {
+    year:dt.getFullYear(),
+    contract:document.getElementById('f-contract').value,
+    road_name:road,
+    road_number:document.getElementById('f-road-num').value.trim(),
+    km_mark:document.getElementById('f-km').value.trim(),
+    direction:document.getElementById('f-direction').value,
+    vehicle_type:document.getElementById('f-vehicle').value.trim(),
+    plate:document.getElementById('f-plate').value.trim(),
+    damage:'',
+    injuries:+document.getElementById('f-injuries').value||0,
+    deaths:+document.getElementById('f-deaths').value||0,
+    cause:document.getElementById('f-cause').value.trim(),
+    cause_category:document.getElementById('f-cause-cat').value,
+    description:'', governorate:'',
+    authority:document.getElementById('f-authority').value.trim(),
+    weather:document.getElementById('f-weather').value,
+    date, time,
+    month:dt.getMonth()+1,
+    month_name:MONTHS[dt.getMonth()],
+    week_day:DAYS7[dt.getDay()],
+    hour:time?+time.split(':')[0]:-1,
+    total_incidents:1, is_aggregate:false,
+    lat:null, lng:null, coords_source:'manual'
+  };
+}
+function saveIncident(){
+  const rec=readForm(); if(!rec) return;
+  if(editIdx!==null){
+    /* حافظ على الإحداثيات والأعلام الأصلية عند التعديل */
+    const old=DB[editIdx];
+    rec.lat=old.lat; rec.lng=old.lng; rec.coords_source=old.coords_source;
+    rec.is_aggregate=old.is_aggregate; rec.total_incidents=old.total_incidents;
+    rec.from_summary=old.from_summary;
+    DB[editIdx]=rec;
+    toast('تم تعديل الحادث ✅');
+  }else{
+    DB.push(rec);
+    toast('تمت إضافة الحادث ✅');
+  }
+  saveDB(); cancelEdit(); buildDatalists(); refresh();
+}
+function editIncident(i){
+  const d=DB[i]; editIdx=i;
+  document.getElementById('form-title').textContent='تعديل حادث ('+(d.date||'')+' — '+(d.road_name||'')+')';
+  document.getElementById('cancel-edit').style.display='inline-block';
+  document.getElementById('save-btn').textContent='💾 حفظ التعديل';
+  document.getElementById('f-date').value=d.date||'';
+  document.getElementById('f-time').value=d.time||'';
+  document.getElementById('f-contract').value=d.contract||'';
+  document.getElementById('f-road').value=d.road_name||'';
+  document.getElementById('f-road-num').value=d.road_number||'';
+  document.getElementById('f-km').value=d.km_mark||'';
+  document.getElementById('f-direction').value=d.direction||'';
+  document.getElementById('f-vehicle').value=d.vehicle_type||'';
+  document.getElementById('f-plate').value=d.plate||'';
+  document.getElementById('f-deaths').value=d.deaths||0;
+  document.getElementById('f-injuries').value=d.injuries||0;
+  document.getElementById('f-weather').value=d.weather||'';
+  document.getElementById('f-cause-cat').value=d.cause_category||'';
+  document.getElementById('f-authority').value=d.authority||'';
+  document.getElementById('f-cause').value=d.cause||'';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function cancelEdit(){
+  editIdx=null;
+  document.getElementById('form-title').textContent='إضافة حادث جديد';
+  document.getElementById('cancel-edit').style.display='none';
+  document.getElementById('save-btn').textContent='💾 حفظ الحادث';
+  ['f-date','f-time','f-road','f-road-num','f-km','f-vehicle','f-plate','f-cause','f-authority'].forEach(id=>document.getElementById(id).value='');
+  ['f-contract','f-direction','f-weather','f-cause-cat'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-deaths').value=0;
+  document.getElementById('f-injuries').value=0;
+}
+function deleteIncident(i){
+  const d=DB[i];
+  if(!confirm('حذف حادث '+(d.date||'')+' — '+(d.road_name||'')+'؟')) return;
+  DB.splice(i,1); saveDB(); refresh();
+  toast('تم حذف الحادث');
+}
+
+/* ═══════ Import / Export ═══════ */
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(DB,null,1)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='incidents_data.json'; a.click();
+  toast('تم تصدير '+nf(DB.length)+' سجل — ارفعه على GitHub لتحديث الموقع');
+}
+function exportCSV(){
+  const cols=['year','date','time','road_name','road_number','contract','km_mark','vehicle_type','plate','deaths','injuries','weather','cause_category','cause','authority'];
+  const head=['السنة','التاريخ','الوقت','الطريق','رقم الطريق','العقد','الكيلو','المركبة','اللوحة','وفيات','إصابات','الطقس','فئة السبب','السبب','الجهة'];
+  const lines=[head.join(',')].concat(DB.map(d=>cols.map(c=>`"${String(d[c]??'').replace(/"/g,'""').replace(/\n/g,' ')}"`).join(',')));
+  const blob=new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='incidents.csv'; a.click();
+}
+function importJSON(inp){
+  const f=inp.files[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const arr=JSON.parse(e.target.result);
+      if(!Array.isArray(arr)) throw new Error('الملف ليس مصفوفة سجلات');
+      const key=d=>[d.date,d.time,d.road_name,d.km_mark,d.plate,d.deaths,d.injuries].join('|');
+      const seen=new Set(DB.map(key));
+      let added=0;
+      arr.forEach(d=>{ if(!seen.has(key(d))){ DB.push(d); seen.add(key(d)); added++; } });
+      saveDB(); buildDatalists(); refresh();
+      toast(`تم استيراد ${nf(added)} سجل جديد (تم تجاهل ${nf(arr.length-added)} مكرر)`);
+    }catch(err){ toast('فشل الاستيراد: '+err.message,true); }
+    inp.value='';
+  };
+  reader.readAsText(f);
+}
+function resetLocal(){
+  if(!confirm('استرجاع النسخة المنشورة؟ ستُحذف جميع التعديلات المحلية غير المصدَّرة.')) return;
+  localStorage.removeItem(LS_KEY);
+  DB=[]; loadDB();
+  toast('تم الاسترجاع من الملف المنشور');
+}
+
+/* ═══════ PIN management (Supabase — أونلاين فقط) ═══════ */
+let gateHash=null;
+function gateAlert(msg,cls){ const a=document.getElementById('gate-alert'); a.className='alert '+cls; a.textContent=msg; }
+function pinAlert(msg,cls){ const a=document.getElementById('pin-alert'); a.className='alert '+cls; a.textContent=msg;
+  setTimeout(()=>a.className='alert',4000); }
+
+async function verifyGate(){
+  const pin=document.getElementById('gate-pin').value.trim();
+  if(!pin) return;
+  if(!supa){ gateAlert('إدارة المستخدمين تتطلب اتصالاً بقاعدة البيانات','err'); return; }
+  const hash=await sha256(pin);
+  try{
+    const {data,error}=await supa.from('users').select('role').eq('pin_hash',hash).maybeSingle();
+    if(error) throw error;
+    if(data&&data.role==='admin'){
+      gateHash=hash;
+      document.getElementById('pin-gate').style.display='none';
+      document.getElementById('pin-mgmt').style.display='block';
+      renderPinList();
+    }else gateAlert('هذا الرقم ليس رقم مدير','err');
+  }catch(e){ gateAlert('تعذّر الاتصال بقاعدة البيانات — تأكد أن مشروع Supabase نشط ثم أعد المحاولة','err'); }
+}
+async function renderPinList(){
+  const list=document.getElementById('pin-list');
+  try{
+    const {data,error}=await supa.from('users').select('id,name,role').order('id');
+    if(error) throw error;
+    list.innerHTML=data.map(u=>`
+      <div class="pin-row">
+        <span class="name">${u.name}</span>
+        <span class="role-tag role-${u.role}">${u.role==='admin'?'مدير':'مستخدم'}</span>
+        ${u.role==='admin'?'':`<button class="btn btn-danger" style="padding:4px 12px;font-size:11px" onclick="removePin(${u.id})">🗑️ حذف</button>`}
+      </div>`).join('');
+  }catch(e){ list.innerHTML='<div class="alert err" style="display:block">تعذّر جلب المستخدمين</div>'; }
+}
+async function addPin(){
+  const pin=document.getElementById('new-pin').value.trim();
+  const conf=document.getElementById('new-pin-confirm').value.trim();
+  const name=document.getElementById('new-pin-name').value.trim()||'مستخدم جديد';
+  if(!pin){ pinAlert('أدخل الرقم السري','warn'); return; }
+  if(pin.length<4){ pinAlert('الرقم يجب أن يكون ٤ أحرف على الأقل','warn'); return; }
+  if(pin!==conf){ pinAlert('الرقمان غير متطابقين','warn'); return; }
+  const newHash=await sha256(pin);
+  try{
+    const {data,error}=await supa.rpc('add_user',{admin_hash:gateHash,new_name:name,new_pin_hash:newHash,new_role:'user'});
+    if(error) throw error;
+    if(data){
+      pinAlert('تمت إضافة "'+name+'" بنجاح ✅','ok');
+      document.getElementById('new-pin').value='';
+      document.getElementById('new-pin-confirm').value='';
+      document.getElementById('new-pin-name').value='';
+      renderPinList();
+    }else pinAlert('فشل: الرقم مستخدم مسبقاً أو الصلاحية غير كافية','err');
+  }catch(e){ pinAlert('خطأ في الاتصال بقاعدة البيانات','err'); }
+}
+async function removePin(id){
+  if(!confirm('حذف هذا المستخدم؟')) return;
+  try{
+    const {data,error}=await supa.rpc('remove_user',{admin_hash:gateHash,target_id:id});
+    if(error) throw error;
+    if(data){ pinAlert('تم الحذف','ok'); renderPinList(); }
+    else pinAlert('لا يمكن حذف المدير','err');
+  }catch(e){ pinAlert('خطأ في الاتصال','err'); }
+}
+
+/* ═══════ Toast ═══════ */
+let toastTimer=null;
+function toast(msg,isErr){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.toggle('err',!!isErr); t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+/* ═══════ Boot ═══════ */
+if(sessionStorage.getItem('auth')==='1') enterApp();
+else document.getElementById('pin-input').focus();
 </script>
 </body>
 </html>

@@ -2,1915 +2,1107 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>لوحة تحكم حوادث السلامة 2025</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>لوحة حوادث السلامة المرورية — منطقة حائل</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg:#0d1117; --surface:#161b22; --card:#1c2333; --border:#30363d;
-  --accent:#58a6ff; --green:#3fb950; --red:#f85149; --orange:#f0883e;
-  --purple:#bc8cff; --cyan:#39d353; --yellow:#d29922;
-  --text:#e6edf3; --muted:#8b949e; --dim:#484f58;
+/* ═══════════ Design tokens (dataviz-validated dark palette) ═══════════ */
+:root{
+  --page:#0f1526;            /* page plane */
+  --surface:#16213e;         /* card surface */
+  --surface-2:#1c2947;       /* raised surface */
+  --border:rgba(255,255,255,.09);
+  --grid:#2a3655;
+  --text:#f2f4f8;
+  --text-2:#c3c9d6;
+  --muted:#8b93a7;
+  --blue:#3987e5;  --aqua:#199e70;  --yellow:#c98500; --violet:#9085e9;
+  --red:#e66767;   --orange:#d95926;
+  --critical:#d03b3b;  --serious:#ec835a;  --good:#0ca30c;  --warning:#fab219;
+  --radius:14px;
+  --shadow:0 6px 24px rgba(0,0,0,.35);
+  --font:'IBM Plex Sans Arabic',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);direction:rtl;overflow:hidden}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--page);color:var(--text);overflow:hidden;font-size:13px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#33406366;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#33406399}
+button,select,input{font-family:var(--font)}
 
-/* ── TOPBAR ── */
-#topbar{
-  height:90px;background:var(--surface);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;position:fixed;top:0;left:0;right:0;z-index:200;
-}
-.tb-brand{display:flex;align-items:center;gap:10px}
-.tb-logo{height:80px;display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.95);border-radius:8px;padding:3px 8px;}
-.tb-logo img{height:200px;width:auto;object-fit:contain;}
-.tb-title{font-size:15px;font-weight:700;color:var(--text)}
-.tb-sub{font-size:11px;color:var(--muted)}
-.tb-right{display:flex;align-items:center;gap:8px}
-.badge-live{background:rgba(63,185,80,.12);color:var(--green);border:1px solid var(--green);padding:3px 9px;border-radius:20px;font-size:11px;display:flex;align-items:center;gap:5px}
-.dot-pulse{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.tbtn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;transition:.2s}
-.tbtn:hover{border-color:var(--accent);color:var(--accent)}
-.tbtn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600}
-.tbtn-primary:hover{background:#79bbff;color:#000}
+/* ═══════════ Login screen ═══════════ */
+#login-screen{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(1200px 700px at 70% -10%,#1c2947 0%,#0f1526 55%,#0a0f1d 100%)}
+.login-card{width:min(440px,92vw);background:linear-gradient(180deg,#1c2947dd,#16213eee);
+  border:1px solid var(--border);border-radius:22px;padding:38px 34px;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);backdrop-filter:blur(12px)}
+.login-card img{width:min(240px,70%);margin-bottom:18px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.4))}
+.login-card h1{font-size:17px;font-weight:700;margin-bottom:4px}
+.login-card p{color:var(--muted);font-size:12px;margin-bottom:22px}
+.login-card input{width:100%;padding:13px 16px;border-radius:12px;border:1.5px solid var(--grid);
+  background:#0f1526;color:var(--text);font-size:16px;text-align:center;letter-spacing:6px;outline:none;
+  transition:border-color .2s}
+.login-card input:focus{border-color:var(--blue)}
+#login-err{color:var(--red);font-size:12px;margin-top:10px;display:none}
+#login-note{color:var(--warning);font-size:11px;margin-top:10px;display:none}
+.login-btn{width:100%;margin-top:14px;padding:13px;border:none;border-radius:12px;cursor:pointer;
+  background:linear-gradient(135deg,#3987e5,#2a6ec4);color:#fff;font-size:14px;font-weight:700;
+  transition:transform .15s,box-shadow .15s}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(57,135,229,.35)}
+.login-btn:disabled{opacity:.6;cursor:wait}
 
-/* ── APP SHELL ── */
-#app{display:flex;flex-direction:column;height:100vh;padding-top:90px}
+/* ═══════════ App shell ═══════════ */
+#app{display:none;height:100vh;height:100dvh;flex-direction:column}
+#app.ready{display:flex}
 
-/* ── KPI ROW ── */
-#kpi-row{
-  display:flex;gap:0;border-bottom:1px solid var(--border);
-  background:var(--surface);flex-shrink:0;overflow-x:auto;
-}
-.kpi{
-  flex:1;min-width:130px;padding:10px 14px;
-  border-left:1px solid var(--border);cursor:pointer;transition:.15s;
-  position:relative;
-}
-.kpi:first-child{border-left:none}
-.kpi:hover{background:rgba(88,166,255,.05)}
-.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.kpi-icon{font-size:18px}
-.kpi-trend{font-size:10px}
-.kpi-val{font-size:26px;font-weight:800;line-height:1}
-.kpi-lbl{font-size:11px;color:var(--muted);margin-top:2px}
-.kpi-bar{height:2px;border-radius:1px;margin-top:8px;background:var(--border)}
-.kpi-bar-fill{height:100%;border-radius:1px;transition:width .5s}
-.kpi.c-blue .kpi-val{color:var(--accent)}
-.kpi.c-red .kpi-val{color:var(--red)}
-.kpi.c-orange .kpi-val{color:var(--orange)}
-.kpi.c-green .kpi-val{color:var(--green)}
-.kpi.c-purple .kpi-val{color:var(--purple)}
-.kpi.c-cyan .kpi-val{color:var(--cyan)}
-.kpi.c-blue .kpi-bar-fill{background:var(--accent)}
-.kpi.c-red .kpi-bar-fill{background:var(--red)}
-.kpi.c-orange .kpi-bar-fill{background:var(--orange)}
-.kpi.c-green .kpi-bar-fill{background:var(--green)}
-.kpi.c-purple .kpi-bar-fill{background:var(--purple)}
-.kpi.c-cyan .kpi-bar-fill{background:var(--cyan)}
+header{display:flex;align-items:center;gap:14px;padding:10px 18px;background:var(--surface);
+  border-bottom:1px solid var(--border);flex-shrink:0}
+header img{height:40px}
+.h-title{flex:1;min-width:0}
+.h-title h1{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-title span{font-size:11px;color:var(--muted)}
+.h-meta{display:flex;gap:8px;align-items:center}
+.pill{background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);
+  padding:5px 12px;border-radius:20px;font-size:11px;white-space:nowrap}
+.pill b{color:var(--blue)}
+.hbtn{background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);padding:7px 14px;
+  border-radius:10px;font-size:12px;cursor:pointer;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.hbtn:hover{border-color:var(--blue);color:var(--text)}
 
-/* ── MAIN 3-COL LAYOUT ── */
-#main-area{display:flex;flex:1;overflow:hidden;min-height:0}
+/* ═══════════ KPI strip ═══════════ */
+#kpis{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;padding:12px 18px;flex-shrink:0}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 14px;cursor:pointer;position:relative;overflow:hidden;transition:transform .15s,border-color .15s}
+.kpi:hover{transform:translateY(-2px);border-color:var(--kc,var(--blue))}
+.kpi.active{border-color:var(--kc,var(--blue));box-shadow:0 0 0 1px var(--kc,var(--blue)),0 6px 18px rgba(0,0,0,.3)}
+.kpi.active::after{content:'✕';position:absolute;top:7px;left:9px;font-size:9px;color:var(--kc,var(--blue))}
+.kpi .lbl{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.kpi .val{font-size:21px;font-weight:700;line-height:1.1;color:var(--text)}
+.kpi .val.sm{font-size:14px;padding-top:4px}
+.kpi .bar{position:absolute;bottom:0;right:0;height:3px;background:var(--kc,var(--blue));
+  border-radius:2px;transition:width .5s ease;opacity:.85}
 
-/* ── LEFT PANEL ── */
-#left-panel{
-  width:300px;min-width:300px;
-  background:var(--surface);border-left:1px solid var(--border);
-  display:flex;flex-direction:column;overflow:hidden;
-}
-.panel-header{
-  padding:10px 14px;border-bottom:1px solid var(--border);
-  font-size:12px;font-weight:600;color:var(--muted);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.panel-tabs{display:flex;border-bottom:1px solid var(--border)}
-.ptab{flex:1;padding:8px;text-align:center;font-size:11px;color:var(--muted);cursor:pointer;border:none;background:none;font-family:inherit;border-bottom:2px solid transparent;transition:.15s}
-.ptab.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* ═══════════ Main 3-column grid ═══════════ */
+#main{flex:1;display:grid;grid-template-columns:280px 1fr 320px;gap:12px;padding:0 18px 12px;min-height:0}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.panel-h{padding:10px 14px;font-size:12.5px;font-weight:700;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;flex-shrink:0}
+.panel-h .grow{flex:1}
+.panel-b{flex:1;overflow-y:auto;padding:12px 14px;min-height:0}
 
 /* Filters */
-#filter-pane{padding:10px;overflow-y:auto;flex:1}
-.fg{margin-bottom:12px}
-.fg label{font-size:11px;color:var(--muted);display:block;margin-bottom:5px}
-select,input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;font-family:inherit;outline:none;direction:rtl}
-select:focus,input:focus{border-color:var(--accent)}
-.chip-wrap{display:flex;flex-wrap:wrap;gap:4px}
-.chip{padding:3px 8px;border-radius:12px;font-size:10px;cursor:pointer;border:1px solid var(--border);color:var(--muted);background:var(--card);transition:.15s}
-.chip.on{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
-.chip:hover:not(.on){border-color:var(--accent);color:var(--accent)}
-.reset{width:100%;margin-top:8px;background:transparent;border:1px solid var(--red);color:var(--red);padding:6px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit}
+.f-group{margin-bottom:14px}
+.f-group>label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:5px 11px;border-radius:16px;background:var(--surface-2);border:1px solid var(--border);
+  font-size:11px;color:var(--text-2);cursor:pointer;user-select:none;transition:all .15s}
+.chip:hover{border-color:var(--blue)}
+.chip.on{background:linear-gradient(135deg,#3987e5,#2a6ec4);border-color:transparent;color:#fff;font-weight:600}
+select.f-sel,input.f-inp{width:100%;padding:8px 10px;border-radius:9px;border:1px solid var(--grid);
+  background:var(--surface-2);color:var(--text);font-size:12px;outline:none}
+select.f-sel:focus,input.f-inp:focus{border-color:var(--blue)}
+.f-dates{display:flex;gap:6px}
+.reset-btn{width:100%;padding:9px;border:1px solid var(--border);border-radius:10px;cursor:pointer;
+  background:transparent;color:var(--muted);font-size:12px;transition:all .15s}
+.reset-btn:hover{border-color:var(--red);color:var(--red)}
 
-/* Road summary table */
-#road-pane{overflow-y:auto;flex:1}
-#road-pane table{width:100%;border-collapse:collapse;font-size:11px}
-#road-pane thead th{background:var(--card);padding:7px 8px;color:var(--muted);text-align:right;position:sticky;top:0;border-bottom:1px solid var(--border);white-space:nowrap}
-#road-pane tbody tr{border-bottom:1px solid rgba(48,54,61,.5);cursor:pointer;transition:.12s}
-#road-pane tbody tr:hover{background:rgba(88,166,255,.06)}
-#road-pane tbody td{padding:6px 8px;vertical-align:middle}
-.r-name{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
-.mini-pill{display:inline-block;padding:1px 5px;border-radius:8px;font-size:10px;font-weight:600}
-.mp-red{background:rgba(248,81,73,.15);color:var(--red)}
-.mp-ora{background:rgba(240,136,62,.15);color:var(--orange)}
-.mp-blue{background:rgba(88,166,255,.15);color:var(--accent)}
+/* Active filter tags */
+#ftags{display:flex;flex-wrap:wrap;gap:5px;padding:0 18px 8px;min-height:0}
+.ftag{display:inline-flex;align-items:center;gap:6px;background:rgba(57,135,229,.14);border:1px solid rgba(57,135,229,.4);
+  color:#9cc4f2;padding:3px 10px;border-radius:14px;font-size:11px;cursor:pointer}
+.ftag:hover{background:rgba(230,103,103,.15);border-color:var(--red);color:var(--red)}
 
-/* ── CENTER: MAP AREA ── */
-#center-panel{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
-#map{flex:1;width:100%;z-index:1}
+/* Road table */
+.road-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.road-tbl th{position:sticky;top:0;background:var(--surface);color:var(--muted);text-align:right;
+  padding:6px 4px;font-weight:600;border-bottom:1px solid var(--border);font-size:10px}
+.road-tbl td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text-2)}
+.road-tbl tr{cursor:pointer}
+.road-tbl tbody tr:hover td{background:rgba(57,135,229,.08)}
+.road-tbl tr.sel td{background:rgba(57,135,229,.16);color:var(--text)}
 
-/* Layer switcher */
-#layer-switcher{
-  position:absolute;top:10px;left:10px;z-index:500;
-  display:flex;gap:4px;flex-direction:column;
+/* Map */
+#map-wrap{position:relative}
+#map{position:absolute;inset:0;border-radius:var(--radius);background:#0a0f1d}
+.map-overlay{position:absolute;z-index:800;background:rgba(15,21,38,.88);border:1px solid var(--border);
+  border-radius:10px;backdrop-filter:blur(8px)}
+#map-count{top:10px;right:10px;padding:6px 12px;font-size:11px;color:var(--text-2)}
+#map-layers{top:10px;left:10px;display:flex;gap:4px;padding:4px}
+.lbtn{padding:5px 10px;border:none;border-radius:7px;background:transparent;color:var(--muted);
+  font-size:10.5px;cursor:pointer;transition:all .15s}
+.lbtn:hover{color:var(--text)}
+.lbtn.active{background:var(--blue);color:#fff;font-weight:600}
+#map-legend{bottom:10px;right:10px;padding:8px 12px;font-size:10.5px;display:flex;flex-direction:column;gap:5px;color:var(--text-2)}
+.leg-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:6px;border:1.5px solid #fff;vertical-align:-1px}
+#map-actions{bottom:10px;left:10px;display:flex;gap:4px;padding:4px}
+.cluster-icon{display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;
+  font-weight:700;border:2.5px solid rgba(255,255,255,.85);box-shadow:0 3px 10px rgba(0,0,0,.5);font-family:var(--font)}
+.cluster-red{background:radial-gradient(circle at 35% 30%,#e66767,#b02a2a)}
+.cluster-orange{background:radial-gradient(circle at 35% 30%,#ec835a,#c4501f)}
+.cluster-green{background:radial-gradient(circle at 35% 30%,#2eb82e,#0a7d0a)}
+.leaflet-popup-content-wrapper{background:#fdfdfc;border-radius:12px}
+.leaflet-popup-content{margin:12px 14px}
+
+/* Charts column */
+.chart-card{background:var(--surface-2);border:1px solid var(--border);border-radius:11px;
+  padding:10px 12px 8px;margin-bottom:10px}
+.chart-card h3{font-size:11.5px;font-weight:600;color:var(--text-2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.chart-card canvas{width:100%!important}
+
+/* ═══════════ Bottom drawer table ═══════════ */
+#drawer{flex-shrink:0;background:var(--surface);border-top:1px solid var(--border);
+  transition:height .3s ease;height:36px;display:flex;flex-direction:column;overflow:hidden}
+#drawer.open{height:42vh}
+#drawer-bar{height:36px;display:flex;align-items:center;gap:12px;padding:0 18px;cursor:pointer;flex-shrink:0;user-select:none}
+#drawer-bar:hover{background:var(--surface-2)}
+#drawer-bar .arrow{transition:transform .3s}
+#drawer.open #drawer-bar .arrow{transform:rotate(180deg)}
+#drawer-tools{display:flex;gap:8px;align-items:center;margin-right:auto}
+#tbl-search{width:200px;padding:5px 10px;border-radius:8px;border:1px solid var(--grid);
+  background:var(--surface-2);color:var(--text);font-size:11px;outline:none}
+#tbl-wrap{flex:1;overflow:auto;padding:0 18px 12px}
+.data-tbl{width:100%;border-collapse:collapse;font-size:11.5px;white-space:nowrap}
+.data-tbl th{position:sticky;top:0;background:var(--surface);color:var(--muted);padding:8px 8px;
+  text-align:right;font-weight:600;border-bottom:1px solid var(--border);font-size:10.5px;z-index:2}
+.data-tbl td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text-2)}
+.data-tbl tbody tr{cursor:pointer}
+.data-tbl tbody tr:hover td{background:rgba(57,135,229,.08)}
+.badge{display:inline-block;padding:2px 8px;border-radius:9px;font-size:10.5px;font-weight:700}
+.b-red{background:rgba(208,59,59,.18);color:#f28b8b}
+.b-orange{background:rgba(236,131,90,.16);color:#f0a480}
+.b-zero{background:rgba(255,255,255,.05);color:var(--muted);font-weight:400}
+
+/* ═══════════ Detail modal ═══════════ */
+#modal{position:fixed;inset:0;z-index:4000;background:rgba(5,8,16,.7);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:16px}
+#modal.show{display:flex}
+.modal-card{width:min(560px,94vw);max-height:86vh;overflow-y:auto;background:var(--surface);
+  border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
+.modal-card h2{font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.d-item{background:var(--surface-2);border-radius:10px;padding:8px 12px}
+.d-item .k{font-size:10px;color:var(--muted);margin-bottom:2px}
+.d-item .v{font-size:12.5px;color:var(--text);font-weight:500;word-break:break-word}
+.d-item.full{grid-column:1/-1}
+.modal-close{width:100%;margin-top:16px;padding:10px;border:1px solid var(--border);border-radius:10px;
+  background:transparent;color:var(--muted);cursor:pointer;font-size:12px}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);z-index:6000;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:11px 22px;
+  border-radius:12px;font-size:12.5px;box-shadow:var(--shadow);transition:transform .3s;max-width:90vw}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:var(--red);color:#f2a0a0}
+
+/* ═══════════ Mobile ═══════════ */
+#mobnav{display:none}
+#mob-sheet{position:fixed;right:0;left:0;bottom:0;z-index:3500;background:var(--surface);
+  border-radius:18px 18px 0 0;border-top:1px solid var(--border);padding:14px 16px calc(20px + env(safe-area-inset-bottom));
+  transform:translateY(105%);transition:transform .3s ease;max-height:70vh;overflow-y:auto;box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+#mob-sheet.show{transform:translateY(0)}
+.sheet-grab{width:44px;height:4px;border-radius:2px;background:var(--grid);margin:0 auto 12px}
+@media (max-width:900px){
+  body{overflow:auto}
+  #app{height:auto;min-height:100dvh;padding-bottom:64px}
+  header{flex-wrap:wrap;padding:10px 12px}
+  .h-meta{display:none}
+  #kpis{grid-template-columns:repeat(2,1fr);padding:10px 12px;gap:8px}
+  .kpi .val{font-size:18px}
+  #ftags{padding:0 12px 8px}
+  #main{display:block;padding:0 12px 12px}
+  .panel{margin-bottom:12px;display:none}
+  .panel.mob-show{display:flex}
+  #map-wrap{height:62vh;position:relative;display:none}
+  #map-wrap.mob-show{display:block}
+  #panel-filters,#panel-charts{max-height:none}
+  #panel-filters .panel-b,#panel-charts .panel-b{overflow:visible}
+  #drawer{display:none;position:relative;border-radius:var(--radius);border:1px solid var(--border)}
+  #drawer.mob-show{display:flex;height:auto!important}
+  #drawer #tbl-wrap{max-height:60vh}
+  #drawer-bar .arrow{display:none}
+  #tbl-search{width:130px}
+  #mobnav{display:flex;position:fixed;bottom:0;right:0;left:0;z-index:3000;background:rgba(15,21,38,.96);
+    border-top:1px solid var(--border);backdrop-filter:blur(12px);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .mtab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border:none;
+    background:transparent;color:var(--muted);font-size:10px;cursor:pointer;border-radius:10px;text-decoration:none}
+  .mtab .ico{font-size:18px}
+  .mtab.on{color:var(--blue);background:rgba(57,135,229,.12)}
 }
-.lbtn{
-  background:rgba(13,17,23,.88);border:1px solid rgba(48,54,61,.9);
-  color:var(--muted);padding:6px 10px;border-radius:7px;cursor:pointer;
-  font-size:11px;font-family:inherit;transition:.2s;white-space:nowrap;
-  backdrop-filter:blur(6px);text-align:right;
+@media (min-width:901px) and (max-width:1280px){
+  #main{grid-template-columns:250px 1fr 280px}
+  #kpis{grid-template-columns:repeat(4,1fr)}
 }
-.lbtn:hover{border-color:var(--accent);color:var(--accent)}
-.lbtn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
-
-#map-overlay{
-  position:absolute;top:10px;right:10px;z-index:10;
-  display:flex;flex-direction:column;gap:6px;
-}
-.map-pill{
-  background:rgba(22,27,34,.92);border:1px solid var(--border);
-  border-radius:8px;padding:6px 10px;font-size:11px;color:var(--text);
-  backdrop-filter:blur(4px);
-}
-.map-legend{display:flex;gap:10px;flex-wrap:wrap}
-.leg-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)}
-.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-#map-bottom{
-  background:var(--surface);border-top:1px solid var(--border);
-  padding:6px 12px;display:flex;align-items:center;justify-content:space-between;
-  font-size:11px;color:var(--muted);
-}
-.map-btns{display:flex;gap:6px}
-
-/* ── RIGHT PANEL ── */
-#right-panel{
-  width:280px;min-width:280px;
-  background:var(--surface);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;overflow:hidden;
-}
-#charts-scroll{flex:1;overflow-y:auto;padding:10px}
-.mini-chart-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px}
-.mc-title{font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:5px}
-.mc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.mc-canvas{max-height:140px}
-
-/* ── BOTTOM DATA TABLE DRAWER ── */
-#data-drawer{
-  background:var(--surface);border-top:1px solid var(--border);
-  transition:height .3s;overflow:hidden;flex-shrink:0;
-}
-#data-drawer.open{height:220px}
-#data-drawer.closed{height:34px}
-#drawer-handle{
-  height:34px;display:flex;align-items:center;justify-content:space-between;
-  padding:0 14px;cursor:pointer;border-bottom:1px solid var(--border);
-}
-.dh-title{font-size:12px;color:var(--muted);font-weight:600}
-.dh-toggle{font-size:11px;color:var(--accent);cursor:pointer}
-#table-wrap{height:186px;overflow-y:auto}
-#incidents-tbl{width:100%;border-collapse:collapse;font-size:11px}
-#incidents-tbl thead th{background:var(--card);padding:6px 10px;color:var(--muted);text-align:right;position:sticky;top:0;border-bottom:1px solid var(--border);white-space:nowrap}
-#incidents-tbl tbody tr{border-bottom:1px solid rgba(48,54,61,.5);transition:.12s}
-#incidents-tbl tbody tr:hover{background:rgba(88,166,255,.05)}
-#incidents-tbl tbody td{padding:5px 10px;white-space:nowrap}
-.bpill{padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700}
-.bp-red{background:rgba(248,81,73,.2);color:var(--red)}
-.bp-ora{background:rgba(240,136,62,.2);color:var(--orange)}
-.bp-muted{color:var(--muted)}
-.day-night{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:8px;font-size:10px}
-.dn-day{background:rgba(240,136,62,.12);color:var(--orange)}
-.dn-night{background:rgba(88,166,255,.12);color:var(--accent)}
-
-/* ── MOBILE ── */
-/* ── TABLET ── */
-@media(max-width:900px){
-  #left-panel,#right-panel{display:none}
-  #app{overflow:auto;height:auto}
-  html,body{overflow:auto}
-  #main-area{flex-direction:column}
-  #map{height:55vw;min-height:280px}
-  #kpi-row{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
-  .kpi{min-width:120px;flex-shrink:0}
-  #data-drawer.open{height:220px}
-  #map-overlay{top:6px;right:6px}
-  #layer-switcher{left:6px}
-  .lbtn{font-size:10px;padding:5px 8px}
-}
-
-/* ── MOBILE ── */
-@media(max-width:600px){
-  /* Topbar */
-  #topbar{height:56px;padding:0 10px}
-  #app{padding-top:56px;padding-bottom:56px}
-  .tb-title{font-size:13px}
-  .tb-sub{display:none}
-  .tb-logo{height:44px;padding:2px 6px;border-radius:6px}
-  .tb-logo img{height:38px}
-  .tbtn{padding:4px 8px;font-size:11px}
-  .badge-live{display:none}
-
-  /* KPIs — 2 صفوف قابلة للتمرير */
-  #kpi-row{flex-wrap:wrap;overflow-x:visible}
-  .kpi{min-width:calc(50% - 1px);flex:0 0 calc(50% - 1px);border-left:none;
-       border-top:1px solid var(--border);padding:8px 12px}
-  .kpi:nth-child(odd){border-left:none}
-  .kpi:nth-child(even){border-right:1px solid var(--border)}
-  .kpi-val{font-size:22px}
-  .kpi-lbl{font-size:10px}
-  .kpi-bar{display:none}
-
-  /* Map */
-  #map{height:60vw;min-height:240px}
-  #map-bottom{flex-direction:column;gap:4px;align-items:flex-start;padding:6px 10px}
-  .map-btns{gap:4px}
-  .tbtn{font-size:10px}
-
-  /* Mobile bottom nav */
-  #mobile-nav{display:flex!important}
-  #data-drawer{display:none}
-
-  /* Modal */
-  .modal-box{width:95%;padding:14px}
-
-  /* Login */
-  #login-screen > div{width:92vw!important;padding:20px 14px!important}
-  #login-logo-box{
-    padding:12px 0!important;
-    border-radius:0!important;
-    margin:0 calc(-1 * clamp(16px,5vw,48px)) 14px!important;
-    width:calc(100% + 2 * clamp(16px,5vw,48px))!important;
-  }
-  #login-logo-img{height:auto!important;width:96%!important;max-height:none!important;margin:0 auto!important;display:block!important}
-  #pin-input{font-size:20px}
-}
-
-/* ── MOBILE BOTTOM NAV ── */
-#mobile-nav{
-  display:none;
-  position:fixed;bottom:0;left:0;right:0;z-index:300;
-  background:var(--surface);border-top:1px solid var(--border);
-  height:56px;
-}
-.mnav-btn{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;border:none;background:none;color:var(--muted);font-size:9px;
-  font-family:inherit;cursor:pointer;padding:6px 0;transition:.15s;
-}
-.mnav-btn .mni{font-size:20px;line-height:1}
-.mnav-btn.active{color:var(--accent)}
-.mnav-btn.active .mni{filter:drop-shadow(0 0 4px var(--accent))}
-
-/* mobile panels */
-#mob-filters,#mob-charts{
-  display:none;position:fixed;inset:0;top:56px;bottom:56px;
-  z-index:250;background:var(--surface);overflow-y:auto;
-}
-#mob-filters.show,#mob-charts.show{display:block}
-@media(min-width:601px){
-  #mobile-nav,#mob-filters,#mob-charts,#mob-incident-sheet{display:none!important}
-}
-
-/* ── Mobile incident bottom sheet ── */
-#mob-incident-sheet{
-  display:none;
-  position:fixed;bottom:56px;left:0;right:0;z-index:400;
-  background:var(--card);border-top:2px solid var(--accent);
-  border-radius:16px 16px 0 0;
-  max-height:65vh;overflow-y:auto;
-  box-shadow:0 -4px 24px rgba(0,0,0,.5);
-  animation:slideUp .25s ease;
-}
-#mob-incident-sheet.show{display:block}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-#mob-sheet-handle{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 16px 6px;border-bottom:1px solid var(--border);
-  position:sticky;top:0;background:var(--card);z-index:1;
-}
-#mob-sheet-body{padding:12px 16px 20px;direction:rtl}
-
-/* ── MODAL ── */
-#detail-modal{
-  display:none;position:fixed;inset:0;z-index:500;
-  background:rgba(0,0,0,.6);backdrop-filter:blur(4px);
-  align-items:center;justify-content:center;
-}
-#detail-modal.open{display:flex}
-.modal-box{
-  background:var(--card);border:1px solid var(--border);border-radius:12px;
-  padding:20px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto;
-}
-.modal-close{float:left;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1}
-.modal-title{font-size:15px;font-weight:700;margin-bottom:14px}
-.mrow{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:13px}
-.mrow-lbl{color:var(--muted);min-width:100px;flex-shrink:0}
-.mrow-val{color:var(--text);font-weight:500}
-
-/* scrollbar */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px}
-
-/* notify */
-#notify{position:fixed;bottom:16px;left:16px;padding:10px 18px;border-radius:8px;font-size:13px;z-index:999;display:none;box-shadow:0 4px 20px rgba(0,0,0,.4)}
-
-/* KPI active state */
-.kpi{cursor:pointer}
-.kpi-active{outline:2px solid var(--accent);outline-offset:-2px;background:rgba(88,166,255,.08)!important}
-.kpi.c-red.kpi-active{outline-color:var(--red);background:rgba(248,81,73,.1)!important}
-.kpi.c-orange.kpi-active{outline-color:var(--orange);background:rgba(240,136,62,.1)!important}
-.kpi.c-green.kpi-active{outline-color:var(--green);background:rgba(63,185,80,.1)!important}
-.kpi.c-purple.kpi-active{outline-color:var(--purple);background:rgba(188,140,255,.1)!important}
-
-/* Leaflet popup override */
-.custom-popup .leaflet-popup-content-wrapper{
-  border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.35);padding:0;overflow:hidden;
-}
-.custom-popup .leaflet-popup-content{margin:12px 14px;direction:rtl}
-.custom-popup .leaflet-popup-tip{background:#fff}
-/* زر الإغلاق أكبر على الموبايل */
-.custom-popup .leaflet-popup-close-button{
-  font-size:20px!important;width:28px!important;height:28px!important;
-  line-height:26px!important;top:4px!important;left:4px!important;
-}
-
-/* ── Cluster icons ── */
-.cluster-icon{
-  display:flex;align-items:center;justify-content:center;
-  border-radius:50%;font-weight:800;color:#fff;
-  border:3px solid rgba(255,255,255,.7);
-  box-shadow:0 2px 10px rgba(0,0,0,.5);
-  font-family:'Segoe UI',Tahoma,Arial,sans-serif;
-  transition:transform .15s;
-}
-.cluster-icon:hover{transform:scale(1.1)}
-.cluster-red   { background:radial-gradient(circle at 35% 35%, #ff6b6b, #c0392b); }
-.cluster-orange{ background:radial-gradient(circle at 35% 35%, #ffb347, #d35400); }
-.cluster-green { background:radial-gradient(circle at 35% 35%, #6bcb77, #27ae60); }
-/* hide default markercluster styles */
-.leaflet-cluster-anim .leaflet-marker-icon,
-.leaflet-cluster-anim .leaflet-marker-shadow{transition:transform .3s,opacity .3s}
 </style>
 </head>
 <body>
 
-<!-- ── LOGIN SCREEN ── -->
-<div id="login-screen" style="
-  position:fixed;inset:0;z-index:9999;
-  background:linear-gradient(135deg,#0d1117 0%,#161b22 100%);
-  display:flex;align-items:center;justify-content:center;
-">
-  <div style="
-    background:#1c2333;border:1px solid #30363d;border-radius:16px;
-    padding:clamp(20px,5vw,40px) clamp(16px,5vw,48px);width:min(460px,92vw);text-align:center;
-    box-shadow:0 20px 60px rgba(0,0,0,.5);
-  ">
-    <div style="margin-bottom:20px">
-      <div id="login-logo-box" style="background:rgba(255,255,255,.95);border-radius:12px;padding:14px 24px;display:block;margin-bottom:16px">
-        <img src="logo.svg" id="login-logo-img" style="height:240px;width:auto;display:block;margin:0 auto">
-      </div>
-      <div style="color:#e6edf3;font-size:16px;font-weight:700;margin-bottom:4px">لوحة حوادث السلامة</div>
-      <div style="color:#8b949e;font-size:12px">الهيئة العامة للطرق — منطقة حائل</div>
-    </div>
-
-    <input id="pin-input" type="password" placeholder="أدخل رمز الدخول"
-      maxlength="10" autocomplete="off"
-      style="
-        width:100%;background:#0d1117;border:1px solid #30363d;
-        color:#e6edf3;padding:12px 16px;border-radius:10px;
-        font-size:18px;text-align:center;letter-spacing:6px;
-        outline:none;margin-bottom:12px;font-family:inherit;
-        transition:border .2s;
-      "
-      oninput="this.style.borderColor='#30363d';document.getElementById('login-err').style.display='none'"
-      onkeydown="if(event.key==='Enter')checkPin()"
-    >
-    <div id="login-err" style="color:#f85149;font-size:12px;margin-bottom:10px;display:none">
-      ❌ رمز الدخول غير صحيح
-    </div>
-    <button onclick="checkPin()" style="
-      width:100%;background:#58a6ff;color:#000;border:none;
-      padding:12px;border-radius:10px;font-size:14px;font-weight:700;
-      cursor:pointer;font-family:inherit;transition:background .2s;
-    " onmouseover="this.style.background='#79bbff'" onmouseout="this.style.background='#58a6ff'">
-      دخول
-    </button>
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <img src="logo.svg" alt="الهيئة العامة للطرق">
+    <h1>لوحة حوادث السلامة المرورية</h1>
+    <p>منطقة حائل — الهيئة العامة للطرق</p>
+    <input id="pin-input" type="password" inputmode="numeric" placeholder="••••" autocomplete="off"
+      onkeydown="if(event.key==='Enter')checkPin()">
+    <div id="login-err">❌ رمز الدخول غير صحيح</div>
+    <div id="login-note">⚠️ تعذّر الاتصال بقاعدة البيانات — تم التحقق محلياً</div>
+    <button class="login-btn" id="login-btn" onclick="checkPin()">دخول</button>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-const SUPA_URL = 'https://aettyehwguheswrrpryi.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFldHR5ZWh3Z3VoZXN3cnJwcnlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NjYyODksImV4cCI6MjA5NDI0MjI4OX0.HJ_HP6g6enaBh32aO0fTEJnWX2tr4RgvHth_bK1fuk4';
-const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
-
-async function checkPin() {
-  const val = document.getElementById('pin-input').value.trim();
-  if (!val) return;
-  const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
-  const hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  const { data } = await supa.from('users').select('role').eq('pin_hash', hash).maybeSingle();
-  if (data) {
-    sessionStorage.setItem('auth', '1');
-    sessionStorage.setItem('auth_hash', hash);
-    sessionStorage.setItem('auth_role', data.role);
-    document.getElementById('login-screen').style.display = 'none';
-  } else {
-    document.getElementById('login-err').style.display = 'block';
-    document.getElementById('pin-input').style.borderColor = '#f85149';
-    document.getElementById('pin-input').value = '';
-    document.getElementById('pin-input').focus();
-  }
-}
-if (sessionStorage.getItem('auth') === '1') {
-  document.getElementById('login-screen').style.display = 'none';
-}
-document.getElementById('pin-input').focus();
-</script>
-
-<!-- TOPBAR -->
-<div id="topbar">
-  <div class="tb-brand">
-    <div class="tb-logo">
-      <img src="logo.svg" alt="الهيئة العامة للطرق">
-    </div>
-    <div>
-      <div class="tb-title">لوحة حوادث السلامة — منطقة حائل</div>
-      <div class="tb-sub">الهيئة العامة للطرق | بيان الحوادث 2023 – 2025م</div>
-    </div>
-  </div>
-  <div class="tb-right">
-    <div class="badge-live"><div class="dot-pulse"></div>مباشر</div>
-    <button class="tbtn" onclick="exportCSV()">📥 تصدير CSV</button>
-    <a href="admin.html" class="tbtn tbtn-primary">⚙️ إدارة البيانات</a>
-    <button class="tbtn" onclick="logout()" title="تسجيل الخروج"
-      style="border-color:#f85149;color:#f85149"
-      onmouseover="this.style.background='rgba(248,81,73,.1)'"
-      onmouseout="this.style.background='transparent'">
-      ⏻ خروج
-    </button>
-  </div>
-</div>
-
+<!-- ═══════════ APP ═══════════ -->
 <div id="app">
+  <header>
+    <img src="logo.svg" alt="شعار">
+    <div class="h-title">
+      <h1>لوحة حوادث السلامة المرورية — منطقة حائل</h1>
+      <span>الهيئة العامة للطرق · <span id="last-update">—</span></span>
+    </div>
+    <div class="h-meta">
+      <span class="pill">السجلات: <b id="shown-count">0</b> / <span id="total-count">0</span></span>
+      <a class="hbtn" href="admin.html">⚙️ الإدارة</a>
+      <button class="hbtn" onclick="logout()">🚪 خروج</button>
+    </div>
+  </header>
 
-  <!-- KPI ROW -->
-  <div id="kpi-row">
-    <div class="kpi c-blue" onclick="kpiClick('reset')" title="انقر لإعادة تعيين الفلاتر">
-      <div class="kpi-top"><span class="kpi-icon">🚨</span><span class="kpi-trend" id="kpi-pct" style="color:var(--muted)">100%</span></div>
-      <div class="kpi-val" id="k-total">—</div>
-      <div class="kpi-lbl">إجمالي الحوادث</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kb-total" style="width:100%"></div></div>
+  <!-- KPI strip -->
+  <div id="kpis">
+    <div class="kpi" style="--kc:var(--blue)" onclick="resetFilters()" title="انقر لإعادة تعيين الفلاتر">
+      <div class="lbl">🚧 إجمالي الحوادث</div><div class="val" id="k-total">0</div>
+      <div class="bar" id="kb-total"></div>
     </div>
-    <div class="kpi c-red" id="kpi-deaths-card" onclick="kpiClick('deaths')" title="انقر للفلترة على الوفيات">
-      <div class="kpi-top"><span class="kpi-icon">💀</span></div>
-      <div class="kpi-val" id="k-deaths">—</div>
-      <div class="kpi-lbl">الوفيات</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kb-deaths"></div></div>
+    <div class="kpi" id="kpi-deaths-card" style="--kc:var(--critical)" onclick="toggleKpi('deathsOnly')">
+      <div class="lbl">🕯️ الوفيات</div><div class="val" id="k-deaths" style="color:#f28b8b">0</div>
+      <div class="bar" id="kb-deaths" style="background:var(--critical)"></div>
     </div>
-    <div class="kpi c-orange" id="kpi-injuries-card" onclick="kpiClick('injuries')" title="انقر للفلترة على الإصابات">
-      <div class="kpi-top"><span class="kpi-icon">🤕</span></div>
-      <div class="kpi-val" id="k-injuries">—</div>
-      <div class="kpi-lbl">الإصابات</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kb-injuries"></div></div>
+    <div class="kpi" id="kpi-injuries-card" style="--kc:var(--serious)" onclick="toggleKpi('injuriesOnly')">
+      <div class="lbl">🩹 الإصابات</div><div class="val" id="k-injuries" style="color:#f0a480">0</div>
+      <div class="bar" id="kb-injuries" style="background:var(--serious)"></div>
     </div>
-    <div class="kpi c-green" id="kpi-day-card" onclick="kpiClick('day')" title="انقر للفلترة على الحوادث النهارية">
-      <div class="kpi-top"><span class="kpi-icon">☀️</span></div>
-      <div class="kpi-val" id="k-day">—</div>
-      <div class="kpi-lbl">حوادث نهارية</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kb-day"></div></div>
+    <div class="kpi" id="kpi-day-card" style="--kc:var(--yellow)" onclick="toggleDayNight('day')">
+      <div class="lbl">☀️ حوادث نهارية</div><div class="val" id="k-day">0</div>
+      <div class="bar" id="kb-day" style="background:var(--yellow)"></div>
     </div>
-    <div class="kpi c-purple" id="kpi-night-card" onclick="kpiClick('night')" title="انقر للفلترة على الحوادث الليلية">
-      <div class="kpi-top"><span class="kpi-icon">🌙</span></div>
-      <div class="kpi-val" id="k-night">—</div>
-      <div class="kpi-lbl">حوادث ليلية</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kb-night"></div></div>
+    <div class="kpi" id="kpi-night-card" style="--kc:var(--violet)" onclick="toggleDayNight('night')">
+      <div class="lbl">🌙 حوادث ليلية</div><div class="val" id="k-night">0</div>
+      <div class="bar" id="kb-night" style="background:var(--violet)"></div>
     </div>
-    <div class="kpi c-cyan">
-      <div class="kpi-top"><span class="kpi-icon">📍</span></div>
-      <div class="kpi-val" id="k-roads">—</div>
-      <div class="kpi-lbl">طرق مرصودة</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" id="kb-roads" style="width:100%"></div></div>
+    <div class="kpi" style="--kc:var(--aqua)" onclick="openDrawer()">
+      <div class="lbl">🛣️ طرق مرصودة</div><div class="val" id="k-roads">0</div>
+      <div class="bar" id="kb-roads" style="background:var(--aqua)"></div>
     </div>
-    <div class="kpi c-blue" id="kpi-month-card" onclick="kpiClick('peak-month')" title="انقر للفلترة على أعلى شهر">
-      <div class="kpi-top"><span class="kpi-icon">📅</span></div>
-      <div class="kpi-val" id="k-peak-month" style="font-size:14px;margin-top:4px">—</div>
-      <div class="kpi-lbl">أعلى شهر حوادثاً</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%"></div></div>
+    <div class="kpi" id="kpi-month-card" style="--kc:var(--blue)" onclick="togglePeakMonth()">
+      <div class="lbl">📅 أعلى شهر</div><div class="val sm" id="k-peak-month">—</div>
     </div>
-    <div class="kpi c-orange" id="kpi-hour-card" onclick="kpiClick('peak-hour')" title="انقر للفلترة على أعلى ساعة">
-      <div class="kpi-top"><span class="kpi-icon">⏰</span></div>
-      <div class="kpi-val" id="k-peak-hour" style="font-size:14px;margin-top:4px">—</div>
-      <div class="kpi-lbl">أعلى ساعة خطورة</div>
-      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%;background:var(--orange)"></div></div>
+    <div class="kpi" id="kpi-hour-card" style="--kc:var(--blue)" onclick="togglePeakHour()">
+      <div class="lbl">⏰ أخطر ساعة</div><div class="val sm" id="k-peak-hour">—</div>
     </div>
   </div>
 
-  <!-- MAIN 3-COL AREA -->
-  <div id="main-area">
+  <div id="ftags"></div>
 
-    <!-- LEFT PANEL -->
-    <div id="left-panel">
-      <div class="panel-tabs">
-        <button class="ptab active" id="ptab-filter" onclick="switchPTab('filter')">🔽 الفلاتر</button>
-        <button class="ptab" id="ptab-roads" onclick="switchPTab('roads')">🛣️ الطرق</button>
+  <!-- Main grid -->
+  <div id="main">
+    <!-- Filters (right in RTL) -->
+    <div class="panel" id="panel-filters">
+      <div class="panel-h">🔍 الفلاتر <span class="grow"></span>
+        <button class="hbtn" style="padding:4px 10px;font-size:11px" onclick="resetFilters()">↺ تعيين</button>
       </div>
+      <div class="panel-b">
+        <div class="f-group"><label>السنة</label><div class="chips" id="year-chips"></div></div>
+        <div class="f-group"><label>الشهر</label><div class="chips" id="month-chips"></div></div>
+        <div class="f-group"><label>رقم العقد</label><div class="chips" id="contract-chips"></div></div>
+        <div class="f-group"><label>حالة الطقس</label><div class="chips" id="weather-chips"></div></div>
+        <div class="f-group"><label>سبب الحادث</label><div class="chips" id="cause-chips"></div></div>
+        <div class="f-group"><label>الطريق</label>
+          <select class="f-sel" id="sel-road" onchange="applyFilters()"><option value="">كل الطرق</option></select>
+        </div>
+        <div class="f-group"><label>نوع المركبة</label>
+          <select class="f-sel" id="sel-vehicle" onchange="applyFilters()"><option value="">كل المركبات</option></select>
+        </div>
+        <div class="f-group"><label>نطاق التاريخ</label>
+          <div class="f-dates">
+            <input class="f-inp" type="date" id="d-from" onchange="applyFilters()">
+            <input class="f-inp" type="date" id="d-to" onchange="applyFilters()">
+          </div>
+        </div>
+        <button class="reset-btn" onclick="resetFilters()">🗑️ مسح جميع الفلاتر</button>
 
-      <!-- FILTER PANE -->
-      <div id="filter-pane">
-        <div class="fg">
-          <label>السنة</label>
-          <div class="chip-wrap" id="year-chips">
-            <div class="chip on" onclick="toggleChip(this,2023,flt.years)">2023</div>
-            <div class="chip on" onclick="toggleChip(this,2024,flt.years)">2024</div>
-            <div class="chip on" onclick="toggleChip(this,2025,flt.years)">2025</div>
-          </div>
+        <div class="f-group" style="margin-top:18px">
+          <label>🛣️ ترتيب الطرق (انقر للفلترة)</label>
+          <input class="f-inp" id="road-search" placeholder="بحث عن طريق…" oninput="renderRoadTable()" style="margin-bottom:8px">
+          <table class="road-tbl">
+            <thead><tr><th>الطريق</th><th>حوادث</th><th>وفيات</th></tr></thead>
+            <tbody id="road-body"></tbody>
+          </table>
         </div>
-        <div class="fg">
-          <label>الشهر</label>
-          <div class="chip-wrap" id="month-chips"></div>
-        </div>
-        <div class="fg">
-          <label>رقم العقد</label>
-          <div class="chip-wrap" id="contract-chips"></div>
-        </div>
-        <div class="fg">
-          <label>حالة الطقس</label>
-          <div class="chip-wrap" id="weather-chips"></div>
-        </div>
-        <div class="fg">
-          <label>ليل / نهار</label>
-          <div class="chip-wrap" id="daynight-chips">
-            <div class="chip" onclick="toggleChip(this,'day',flt.daynight)" data-val="day">☀️ نهار</div>
-            <div class="chip" onclick="toggleChip(this,'night',flt.daynight)" data-val="night">🌙 ليل</div>
-          </div>
-        </div>
-        <div class="fg">
-          <label>الطريق</label>
-          <select id="sel-road" onchange="applyFilters()">
-            <option value="">— جميع الطرق —</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>نوع المركبة</label>
-          <select id="sel-vehicle" onchange="applyFilters()">
-            <option value="">— جميع المركبات —</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>سبب الحادث</label>
-          <div class="chip-wrap" id="cause-chips"></div>
-        </div>
-        <div class="fg" style="display:flex;gap:6px">
-          <div style="flex:1">
-            <label>من تاريخ</label>
-            <input type="date" id="d-from" onchange="applyFilters()">
-          </div>
-          <div style="flex:1">
-            <label>إلى تاريخ</label>
-            <input type="date" id="d-to" onchange="applyFilters()">
-          </div>
-        </div>
-        <button class="reset" onclick="resetFilters()">🔄 إعادة تعيين</button>
-        <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.8">
-          <div>📊 المعروض: <strong id="shown-count" style="color:var(--text)">—</strong> / <span id="total-count">—</span></div>
-          <div>📅 آخر تحديث: <strong id="last-update" style="color:var(--text)">—</strong></div>
-        </div>
-      </div>
-
-      <!-- ROADS PANE -->
-      <div id="road-pane" style="display:none">
-        <div style="padding:6px 10px;border-bottom:1px solid var(--border)">
-          <input type="text" id="road-search" placeholder="🔍 ابحث عن طريق..." oninput="renderRoadTable()">
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>الطريق</th>
-              <th>عقد</th>
-              <th>حوادث</th>
-              <th>وفيات</th>
-              <th>إصابات</th>
-            </tr>
-          </thead>
-          <tbody id="road-tbody"></tbody>
-        </table>
       </div>
     </div>
 
-    <!-- CENTER: MAP -->
-    <div id="center-panel">
+    <!-- Map (center) -->
+    <div id="map-wrap" class="panel">
       <div id="map"></div>
-      <!-- layer switcher -->
-      <div id="layer-switcher">
-        <button class="lbtn active" id="lb-google"   onclick="setLayer('google')">🛰️ Google</button>
-        <button class="lbtn"        id="lb-hybrid"   onclick="setLayer('hybrid')">🏷️ هجين</button>
-        <button class="lbtn"        id="lb-esri"     onclick="setLayer('esri')">🌍 ESRI</button>
-        <button class="lbtn"        id="lb-dark"     onclick="setLayer('dark')">🌑 داكن</button>
+      <div class="map-overlay" id="map-count">—</div>
+      <div class="map-overlay" id="map-layers">
+        <button class="lbtn active" id="lb-google" onclick="setLayer('google')">قمر صناعي</button>
+        <button class="lbtn" id="lb-hybrid" onclick="setLayer('hybrid')">هجين</button>
+        <button class="lbtn" id="lb-esri" onclick="setLayer('esri')">ESRI</button>
+        <button class="lbtn" id="lb-dark" onclick="setLayer('dark')">داكن</button>
       </div>
-      <div id="map-overlay">
-        <div class="map-pill">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:5px">⚠️ تعرض حوادث الوفيات فقط</div>
-          <div class="map-legend">
-            <div class="leg-item"><div class="leg-dot" style="background:#e53935;border:2px solid #fff;box-shadow:0 0 0 1px #e53935"></div>وفاة واحدة</div>
-            <div class="leg-item"><div class="leg-dot" style="background:#e53935;border:2px solid #fff;box-shadow:0 0 0 1px #e53935;width:16px;height:16px"></div>وفيات متعددة</div>
-          </div>
-        </div>
+      <div class="map-overlay" id="map-legend">
+        <span><span class="leg-dot" style="background:var(--critical)"></span>وفيات</span>
+        <span><span class="leg-dot" style="background:var(--serious)"></span>إصابات</span>
+        <span><span class="leg-dot" style="background:var(--good)"></span>أضرار مادية</span>
       </div>
-      <div id="map-bottom">
-        <span id="map-count">—</span>
-        <div class="map-btns">
-          <button class="tbtn" onclick="mapFit()">🎯 توسيط</button>
-          <button class="tbtn" id="heatmode-btn" onclick="toggleHeatMode()">🔥 كثافة</button>
-          <button class="tbtn" onclick="toggleDrawer()">📋 الجدول</button>
-        </div>
+      <div class="map-overlay" id="map-actions">
+        <button class="lbtn" onclick="mapFit()">⛶ ملاءمة</button>
+        <button class="lbtn" id="allmode-btn" onclick="toggleAllMode()" title="الوفيات لها إحداثيات دقيقة؛ بقية الحوادث تقريبية">عرض كل الحوادث</button>
       </div>
     </div>
 
-    <!-- RIGHT PANEL: Mini Charts -->
-    <div id="right-panel">
-      <div class="panel-header">
-        <span>📊 مخططات سريعة</span>
-      </div>
-      <div id="charts-scroll">
-
-        <div class="mini-chart-card">
-          <div class="mc-title"><div class="mc-dot" style="background:var(--accent)"></div>الحوادث شهرياً</div>
-          <canvas id="mc-monthly" class="mc-canvas"></canvas>
-        </div>
-
-        <div class="mini-chart-card">
-          <div class="mc-title"><div class="mc-dot" style="background:var(--red)"></div>الوفيات / الإصابات</div>
-          <canvas id="mc-casualties" class="mc-canvas"></canvas>
-        </div>
-
-        <div class="mini-chart-card">
-          <div class="mc-title"><div class="mc-dot" style="background:var(--orange)"></div>الساعات الخطرة</div>
-          <canvas id="mc-hourly" class="mc-canvas"></canvas>
-        </div>
-
-        <div class="mini-chart-card">
-          <div class="mc-title"><div class="mc-dot" style="background:var(--purple)"></div>حالة الطقس</div>
-          <canvas id="mc-weather" class="mc-canvas"></canvas>
-        </div>
-
-        <div class="mini-chart-card">
-          <div class="mc-title"><div class="mc-dot" style="background:var(--green)"></div>أسباب الحوادث</div>
-          <canvas id="mc-causes" class="mc-canvas"></canvas>
-        </div>
-
-        <div class="mini-chart-card">
-          <div class="mc-title"><div class="mc-dot" style="background:var(--cyan)"></div>أيام الأسبوع</div>
-          <canvas id="mc-days" class="mc-canvas"></canvas>
-        </div>
-
+    <!-- Charts (left) -->
+    <div class="panel" id="panel-charts">
+      <div class="panel-h">📊 التحليلات <span class="grow"></span><span style="font-size:10px;color:var(--muted);font-weight:400">انقر أي عمود للفلترة</span></div>
+      <div class="panel-b">
+        <div class="chart-card"><h3>الحوادث شهرياً</h3><div style="height:130px"><canvas id="c-monthly"></canvas></div></div>
+        <div class="chart-card"><h3>الوفيات والإصابات شهرياً</h3><div style="height:150px"><canvas id="c-casualties"></canvas></div></div>
+        <div class="chart-card"><h3>الساعات الخطرة (٢٤ ساعة)</h3><div style="height:120px"><canvas id="c-hours"></canvas></div></div>
+        <div class="chart-card"><h3>حالة الطقس</h3><div style="height:150px"><canvas id="c-weather"></canvas></div></div>
+        <div class="chart-card"><h3>أسباب الحوادث</h3><div style="height:170px"><canvas id="c-causes"></canvas></div></div>
+        <div class="chart-card"><h3>أيام الأسبوع</h3><div style="height:120px"><canvas id="c-days"></canvas></div></div>
       </div>
     </div>
-
   </div>
 
-  <!-- BOTTOM DATA DRAWER -->
-  <div id="data-drawer" class="closed">
-    <div id="drawer-handle" onclick="toggleDrawer()">
-      <div class="dh-title">📋 سجل الحوادث — <span id="tbl-count">—</span></div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <input type="text" id="tbl-search" placeholder="بحث..." style="width:140px;height:24px;font-size:11px" onclick="event.stopPropagation()" oninput="renderTable()">
-        <span class="dh-toggle" id="drawer-icon">▲ فتح</span>
+  <!-- Bottom drawer -->
+  <div id="drawer">
+    <div id="drawer-bar" onclick="toggleDrawer(event)">
+      <span class="arrow">▲</span>
+      <b style="font-size:12px">📋 سجل الحوادث</b>
+      <span style="color:var(--muted);font-size:11px" id="tbl-count"></span>
+      <div id="drawer-tools" onclick="event.stopPropagation()">
+        <input id="tbl-search" placeholder="🔍 بحث في السجل…" oninput="renderTable()">
+        <button class="hbtn" style="padding:5px 12px;font-size:11px" onclick="exportCSV()">⬇ CSV</button>
       </div>
     </div>
-    <div id="table-wrap">
-      <table id="incidents-tbl">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>السنة</th>
-            <th>التاريخ</th>
-            <th>الطريق</th>
-            <th>رقم العقد</th>
-            <th>العلامة الكيلومترية</th>
-            <th>نوع المركبة</th>
-            <th>ليل/نهار</th>
-            <th>الشهر</th>
-            <th>الساعة</th>
-            <th>الطقس</th>
-            <th>وفيات</th>
-            <th>إصابات</th>
-            <th>فئة السبب</th>
-            <th>الجهة المباشرة</th>
-          </tr>
-        </thead>
+    <div id="tbl-wrap">
+      <table class="data-tbl">
+        <thead><tr>
+          <th>السنة</th><th>التاريخ</th><th>الطريق</th><th>العقد</th><th>الكيلو</th><th>المركبة</th>
+          <th>ليل/نهار</th><th>الساعة</th><th>الطقس</th><th>وفيات</th><th>إصابات</th><th>السبب</th>
+        </tr></thead>
         <tbody id="tbl-body"></tbody>
       </table>
     </div>
   </div>
+</div>
 
-</div><!-- /app -->
-
-<!-- ── MOBILE BOTTOM NAV ── -->
-<nav id="mobile-nav">
-  <button class="mnav-btn active" id="mnav-map" onclick="mobTab('map')">
-    <span class="mni">🗺️</span>الخريطة
-  </button>
-  <button class="mnav-btn" id="mnav-filters" onclick="mobTab('filters')">
-    <span class="mni">🔽</span>الفلاتر
-  </button>
-  <button class="mnav-btn" id="mnav-charts" onclick="mobTab('charts')">
-    <span class="mni">📊</span>المخططات
-  </button>
-  <button class="mnav-btn" id="mnav-table" onclick="mobTab('table')">
-    <span class="mni">📋</span>الجدول
-  </button>
-  <button class="mnav-btn" id="mnav-admin" onclick="location.href='admin.html'">
-    <span class="mni">⚙️</span>الإدارة
-  </button>
-</nav>
-
-<!-- Mobile incident bottom sheet -->
-<div id="mob-incident-sheet">
-  <div id="mob-sheet-handle">
-    <span style="font-size:13px;font-weight:700;color:var(--text)">🚨 تفاصيل الحادث</span>
-    <button onclick="closeMobSheet()" style="background:none;border:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:0 4px">✕</button>
+<!-- Detail modal -->
+<div id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-card">
+    <h2 id="modal-title">🚨 تفاصيل الحادث</h2>
+    <div class="detail-grid" id="modal-body"></div>
+    <button class="modal-close" onclick="closeModal()">إغلاق</button>
   </div>
+</div>
+
+<!-- Mobile bottom sheet (map incident) -->
+<div id="mob-sheet">
+  <div class="sheet-grab" onclick="closeMobSheet()"></div>
   <div id="mob-sheet-body"></div>
 </div>
 
-<!-- لوحة الفلاتر للموبايل -->
-<div id="mob-filters">
-  <div style="padding:12px 16px 80px">
-    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;padding-top:4px">🔽 الفلاتر</div>
+<!-- Mobile nav -->
+<nav id="mobnav">
+  <button class="mtab on" id="mt-map" onclick="mobTab('map')"><span class="ico">🗺️</span>خريطة</button>
+  <button class="mtab" id="mt-filters" onclick="mobTab('filters')"><span class="ico">🔽</span>فلاتر</button>
+  <button class="mtab" id="mt-charts" onclick="mobTab('charts')"><span class="ico">📊</span>تحليلات</button>
+  <button class="mtab" id="mt-table" onclick="mobTab('table')"><span class="ico">📋</span>سجل</button>
+  <a class="mtab" href="admin.html"><span class="ico">⚙️</span>إدارة</a>
+</nav>
 
-    <div class="fg" style="margin-bottom:12px">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">السنة</label>
-      <div class="chip-wrap" id="mob-year-chips"></div>
-    </div>
-    <div class="fg" style="margin-bottom:12px">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">الشهر</label>
-      <div class="chip-wrap" id="mob-month-chips"></div>
-    </div>
-    <div class="fg" style="margin-bottom:12px">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">رقم العقد</label>
-      <div class="chip-wrap" id="mob-contract-chips"></div>
-    </div>
-    <div class="fg" style="margin-bottom:12px">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">حالة الطقس</label>
-      <div class="chip-wrap" id="mob-weather-chips"></div>
-    </div>
-    <div class="fg" style="margin-bottom:12px">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">ليل / نهار</label>
-      <div class="chip-wrap">
-        <div class="chip" onclick="mobDayNight(this,'day')">☀️ نهار</div>
-        <div class="chip" onclick="mobDayNight(this,'night')">🌙 ليل</div>
-      </div>
-    </div>
-    <div class="fg" style="margin-bottom:12px">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">الطريق</label>
-      <select id="mob-road" onchange="flt.road=this.value;applyFilters()" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:7px;font-size:12px;font-family:inherit">
-        <option value="">— جميع الطرق —</option>
-      </select>
-    </div>
-    <div class="fg" style="margin-bottom:12px">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">سبب الحادث</label>
-      <div class="chip-wrap" id="mob-cause-chips"></div>
-    </div>
-    <button onclick="resetFilters();syncMobFilters()" style="width:100%;background:transparent;border:1px solid var(--red);color:var(--red);padding:8px;border-radius:7px;cursor:pointer;font-size:13px;font-family:inherit;margin-top:4px">🔄 إعادة تعيين</button>
-  </div>
-</div>
+<div id="toast"></div>
 
-<!-- لوحة المخططات للموبايل -->
-<div id="mob-charts">
-  <div style="padding:12px 16px 80px">
-    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;padding-top:4px">📊 المخططات</div>
-
-    <div class="mini-chart-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">الحوادث شهرياً</div>
-      <canvas id="mob-mc-monthly" style="max-height:160px"></canvas>
-    </div>
-    <div class="mini-chart-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">الوفيات / الإصابات</div>
-      <canvas id="mob-mc-casualties" style="max-height:140px"></canvas>
-    </div>
-    <div class="mini-chart-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">الساعات الخطرة</div>
-      <canvas id="mob-mc-hourly" style="max-height:120px"></canvas>
-    </div>
-    <div class="mini-chart-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">حالة الطقس</div>
-      <canvas id="mob-mc-weather" style="max-height:180px"></canvas>
-    </div>
-    <div class="mini-chart-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">أسباب الحوادث</div>
-      <canvas id="mob-mc-causes" style="max-height:160px"></canvas>
-    </div>
-    <div class="mini-chart-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">أيام الأسبوع</div>
-      <canvas id="mob-mc-days" style="max-height:140px"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- INCIDENT DETAIL MODAL -->
-<div id="detail-modal">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-title">🚨 تفاصيل الحادث</div>
-    <div id="modal-content"></div>
-  </div>
-</div>
-
-<div id="notify"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// ═══════════════════════════════════════════════
-// Data
-// ═══════════════════════════════════════════════
-let ALL = [], FILT = [];
-let charts = {};
-let mapObj = null, markersLayer = null;
-let heatMode = false;
-let drawerOpen = false;
+/* ═══════════════════ AUTH — Supabase + local fallback ═══════════════════ */
+const SUPA_URL = 'https://aettyehwguheswrrpryi.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFldHR5ZWh3Z3VoZXN3cnJwcnlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NjYyODksImV4cCI6MjA5NDI0MjI4OX0.HJ_HP6g6enaBh32aO0fTEJnWX2tr4RgvHth_bK1fuk4';
+let supa = null;
+try { supa = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch(e) {}
 
-const MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-const DAYS7 = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-const PALETTE = ['#58a6ff','#f85149','#3fb950','#f0883e','#bc8cff','#39d353','#ffa657','#79c0ff','#56d364','#ff7b72'];
+/* نسخة احتياطية محلية (هاش SHA-256 فقط — لا أرقام واضحة في الكود):
+   تُستخدم فقط إذا تعذّر الاتصال بقاعدة البيانات حتى لا يُقفل الدخول أبداً */
+const FALLBACK_USERS = {
+  '6c80cf1e44d265f12435bf5b72b846543dcc8e524319a16037fb37190fa17b65': 'admin',
+  '10768c26fcd6821ec7ccac19dbb327d64ae07e9e53579db4c27b55b246eccfc7': 'user',
+  '4d35400212c48af20364bce423922d2dc6799495359720460138cc6a6849ff7c': 'user',
+  'f14e5d1984c9b8d75fa57ccdfbbda927a6a7fd5b02248ae949db7bc14e846f2b': 'user',
+  '6dc0836503e959579d293d55688b76f3fd10e7ba8ce4aa042300872245890608': 'user',
+};
 
-let flt = { years:[2023,2024,2025], months:[], contracts:[], weathers:[], daynight:[], road:'', vehicle:'', causes:[], from:'', to:'' };
-
-// فلاتر المخططات والـ KPI — تعمل بشكل مستقل وتُدمج مع flt
-let cf = { month:null, hour:null, weather:null, cause:null, weekday:null, deathsOnly:false, injuriesOnly:false };
-
-// ═══════════════════════════════════════════════
-// Init
-// ═══════════════════════════════════════════════
-async function init() {
-  try {
-    const r = await fetch('incidents_data.json?v=' + Date.now());
-    ALL = await r.json();
-    document.getElementById('total-count').textContent = ALL.length;
-
-    const dates = ALL.map(d => d.date).filter(Boolean).sort();
-    if (dates.length) document.getElementById('last-update').textContent = dates[dates.length-1];
-
-    buildFilters();
-    applyFilters();
-    initMap();
-  } catch(e) {
-    notify('فشل تحميل البيانات: ' + e.message, true);
-  }
+async function sha256(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-function isDayTime(hour, dayNight) {
-  if (dayNight === 'نهار') return true;
-  if (dayNight === 'ليل')  return false;
-  return hour >= 6 && hour < 18;
-}
+async function checkPin(){
+  const val = document.getElementById('pin-input').value.trim();
+  if (!val) return;
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'جارٍ التحقق…';
+  const hash = await sha256(val);
+  let role = null, offline = false;
 
-// ═══════════════════════════════════════════════
-// Filters
-// ═══════════════════════════════════════════════
-function buildFilters() {
-  // Months
-  const mc = document.getElementById('month-chips');
-  MONTHS.forEach(m => {
-    if (!ALL.some(d => d.month_name === m)) return;
-    const c = mkChip(m, m.slice(0,4), flt.months);
-    mc.appendChild(c);
-  });
-
-  // Contracts
-  const cc = document.getElementById('contract-chips');
-  [...new Set(ALL.map(d => d.contract).filter(Boolean))].sort().forEach(v => {
-    const c = mkChip(v, 'عقد ' + v, flt.contracts);
-    cc.appendChild(c);
-  });
-
-  // Weather
-  const wc = document.getElementById('weather-chips');
-  [...new Set(ALL.map(d => d.weather).filter(Boolean))].sort().forEach(v => {
-    const c = mkChip(v, v, flt.weathers);
-    wc.appendChild(c);
-  });
-
-  // Roads
-  const rs = document.getElementById('sel-road');
-  [...new Set(ALL.map(d => d.road_name).filter(Boolean))].sort().forEach(v => {
-    const o = document.createElement('option');
-    o.value = v; o.textContent = v;
-    rs.appendChild(o);
-  });
-
-  // Vehicles — extract individual names from combined entries
-  const vs = document.getElementById('sel-vehicle');
-  const vehicleSet = new Set();
-  ALL.forEach(d => {
-    if (!d.vehicle_type) return;
-    splitVehicles(d.vehicle_type).forEach(v => vehicleSet.add(v));
-  });
-  [...vehicleSet].sort((a,b) => a.localeCompare(b, 'ar')).forEach(v => {
-    const o = document.createElement('option');
-    o.value = v; o.textContent = v;
-    vs.appendChild(o);
-  });
-
-  // Cause categories
-  const CAUSE_ICONS = {
-    'عدم الانتباه':     '😴',
-    'انحراف المركبة':   '🔄',
-    'انفجار الإطار':    '💥',
-    'صدم حيوان سائب':  '🐪',
-    'عطل فني':          '🔧',
-    'تجاوز خاطئ':      '↩️',
-    'النعاس':           '💤',
-  };
-  const causeEl = document.getElementById('cause-chips');
-  const catSet = [...new Set(ALL.map(d => d.cause_category).filter(Boolean))].sort();
-  catSet.forEach(cat => {
-    const chip = document.createElement('div');
-    chip.className = 'chip';
-    chip.textContent = (CAUSE_ICONS[cat] || '') + ' ' + cat;
-    chip.onclick = () => toggleChip(chip, cat, flt.causes);
-    causeEl.appendChild(chip);
-  });
-}
-
-// تقسيم حقل المركبة إلى أسماء مفردة
-function splitVehicles(str) {
-  return str.split(/[+\-،,\/]+/)
-            .map(v => v.trim())
-            .filter(v => v.length > 1);
-}
-
-// عرض المركبة في العمود: المطابقة للفلتر أو الأولى
-function displayVehicle(vehicleStr, filterTerm) {
-  if (!vehicleStr) return '—';
-  const parts = splitVehicles(vehicleStr);
-  if (!parts.length) return vehicleStr.slice(0,14);
-  if (filterTerm) {
-    const match = parts.find(v => v.includes(filterTerm) || filterTerm.includes(v));
-    if (match) {
-      const others = parts.filter(v => v !== match);
-      return match.slice(0,16) + (others.length ? ` <span style="color:var(--muted);font-size:10px">+${others.length}</span>` : '');
+  if (supa) {
+    try {
+      const { data, error } = await Promise.race([
+        supa.from('users').select('role').eq('pin_hash', hash).maybeSingle(),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), 6000))
+      ]);
+      if (error) throw error;
+      if (data) role = data.role;
+    } catch(e) {
+      offline = true;
+      if (FALLBACK_USERS[hash]) role = FALLBACK_USERS[hash];
     }
+  } else if (FALLBACK_USERS[hash]) { offline = true; role = FALLBACK_USERS[hash]; }
+
+  btn.disabled = false; btn.textContent = 'دخول';
+  if (role) {
+    sessionStorage.setItem('auth','1');
+    sessionStorage.setItem('auth_hash',hash);
+    sessionStorage.setItem('auth_role',role);
+    if (offline) document.getElementById('login-note').style.display='block';
+    enterApp();
+  } else {
+    document.getElementById('login-err').style.display='block';
+    const inp=document.getElementById('pin-input');
+    inp.value=''; inp.focus();
   }
-  const first = parts[0].slice(0,16);
-  return first + (parts.length > 1 ? ` <span style="color:var(--muted);font-size:10px">+${parts.length-1}</span>` : '');
 }
 
-function mkChip(val, label, arr) {
-  const c = document.createElement('div');
-  c.className = 'chip';
-  c.textContent = label;
-  c.onclick = () => toggleChip(c, val, arr);
-  return c;
+function enterApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('ready');
+  init();
+}
+function logout(){ sessionStorage.clear(); location.reload(); }
+
+document.getElementById('pin-input').addEventListener('input',()=>{
+  document.getElementById('login-err').style.display='none';
+});
+
+/* ═══════════════════ STATE ═══════════════════ */
+const MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const DAYS7  = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const CAUSE_ICONS = {'عدم الانتباه':'😴','انحراف المركبة':'🔄','انفجار الإطار':'💥','صدم حيوان سائب':'🐪','عطل فني':'🔧','تجاوز خاطئ':'↩️','النعاس':'💤'};
+
+let ALL=[], FILT=[];
+let flt = { years:[2023,2024,2025], months:[], contracts:[], weathers:[], daynight:[], road:'', vehicle:'', causes:[], from:'', to:'' };
+let cf  = { month:null, hour:null, weather:null, cause:null, weekday:null, deathsOnly:false, injuriesOnly:false };
+let charts={}, mapObj=null, markersLayer=null, activeLayer=null, allMode=false;
+let _peakMonth=null, _peakHour=-1, selectedRoad='';
+
+const nf = n => n.toLocaleString('ar');
+
+/* ═══════════════════ INIT ═══════════════════ */
+/* توحيد التواريخ: بعض سجلات Excel جاءت بصيغ 24\01\2024 أو 22-08-2025 */
+function normDate(s){
+  if(!s) return '';
+  s=String(s).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  let m=s.match(/^(\d{4})\D(\d{1,2})\D(\d{1,2})$/);
+  if(m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m=s.match(/^(\d{1,2})\D+(\d{1,2})\D+(\d{4})$/);
+  if(m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  return s;
 }
 
-function toggleChip(el, val, arr) {
-  // السنة تأتي كرقم
-  const v = typeof val === 'number' ? val : val;
-  const i = arr.indexOf(v);
-  if (i === -1) { arr.push(v); el.classList.add('on'); }
-  else { arr.splice(i, 1); el.classList.remove('on'); }
+async function init(){
+  try{
+    const r = await fetch('incidents_data.json?v='+Date.now());
+    ALL = await r.json();
+    ALL.forEach(d=>{ d.date=normDate(d.date); });
+    document.getElementById('total-count').textContent = nf(ALL.length);
+    /* استبعاد التواريخ المطبعية الخاطئة (مثل 2042) — نعتمد فقط التواريخ المطابقة لحقل السنة */
+    const dates = ALL.filter(d=>d.date && d.date.startsWith(String(d.year))).map(d=>d.date).sort();
+    if (dates.length) document.getElementById('last-update').textContent = 'آخر تحديث: '+dates[dates.length-1];
+    buildFilters();
+    initMap();
+    applyFilters();
+    if (window.innerWidth<=900) mobTab('map');
+  }catch(e){ toast('فشل تحميل البيانات: '+e.message, true); }
+}
+
+function isDayTime(hour, dayNight){
+  if (dayNight==='نهار') return true;
+  if (dayNight==='ليل') return false;
+  return hour>=6 && hour<18;
+}
+
+function splitVehicles(str){
+  return (str||'').split(/[+\-،,\/]+/).map(v=>v.trim()).filter(v=>v.length>1);
+}
+
+/* ═══════════════════ FILTER UI ═══════════════════ */
+function mkChip(val,label,arr,parent){
+  const c=document.createElement('div');
+  c.className='chip'; c.textContent=label; c.dataset.val=val;
+  if (arr.includes(val)) c.classList.add('on');
+  c.onclick=()=>{ const i=arr.indexOf(val);
+    if(i===-1){arr.push(val);c.classList.add('on')}else{arr.splice(i,1);c.classList.remove('on')}
+    applyFilters(); };
+  parent.appendChild(c);
+}
+
+function buildFilters(){
+  const yc=document.getElementById('year-chips');
+  [...new Set(ALL.map(d=>d.year))].sort().forEach(y=>mkChip(y, y, flt.years, yc));
+  const mc=document.getElementById('month-chips');
+  MONTHS.forEach(m=>{ if(ALL.some(d=>d.month_name===m)) mkChip(m, m, flt.months, mc); });
+  const cc=document.getElementById('contract-chips');
+  [...new Set(ALL.map(d=>d.contract).filter(Boolean))].sort().forEach(v=>mkChip(v,'عقد '+v,flt.contracts,cc));
+  const wc=document.getElementById('weather-chips');
+  [...new Set(ALL.map(d=>d.weather).filter(Boolean))].sort().forEach(v=>mkChip(v,v,flt.weathers,wc));
+  const cauEl=document.getElementById('cause-chips');
+  [...new Set(ALL.map(d=>d.cause_category).filter(Boolean))].sort().forEach(cat=>{
+    mkChip(cat,(CAUSE_ICONS[cat]||'')+' '+cat,flt.causes,cauEl); });
+  const rs=document.getElementById('sel-road');
+  [...new Set(ALL.map(d=>d.road_name).filter(Boolean))].sort().forEach(v=>{
+    rs.appendChild(new Option(v,v)); });
+  const vs=document.getElementById('sel-vehicle');
+  const vset=new Set();
+  ALL.forEach(d=>splitVehicles(d.vehicle_type).forEach(v=>vset.add(v)));
+  [...vset].sort((a,b)=>a.localeCompare(b,'ar')).forEach(v=>vs.appendChild(new Option(v,v)));
+}
+
+function resetFilters(){
+  flt={years:[2023,2024,2025],months:[],contracts:[],weathers:[],daynight:[],road:'',vehicle:'',causes:[],from:'',to:''};
+  cf={month:null,hour:null,weather:null,cause:null,weekday:null,deathsOnly:false,injuriesOnly:false};
+  selectedRoad='';
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  document.querySelectorAll('#year-chips .chip').forEach(c=>c.classList.add('on'));
+  document.getElementById('sel-road').value='';
+  document.getElementById('sel-vehicle').value='';
+  document.getElementById('d-from').value='';
+  document.getElementById('d-to').value='';
   applyFilters();
 }
 
-function resetFilters() {
-  flt = { years:[2023,2024,2025], months:[], contracts:[], weathers:[], daynight:[], road:'', vehicle:'', causes:[], from:'', to:'' };
-  clearCF();
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
-  document.querySelectorAll('#year-chips .chip').forEach(c => c.classList.add('on'));
-  document.getElementById('sel-road').value = '';
-  document.getElementById('sel-vehicle').value = '';
-  document.getElementById('d-from').value = '';
-  document.getElementById('d-to').value = '';
-  applyFilters();
-}
+/* ═══════════════════ FILTER ENGINE ═══════════════════ */
+function applyFilters(){
+  flt.road=document.getElementById('sel-road').value;
+  flt.vehicle=document.getElementById('sel-vehicle').value;
+  flt.from=document.getElementById('d-from').value;
+  flt.to=document.getElementById('d-to').value;
 
-function applyFilters() {
-  flt.road = document.getElementById('sel-road').value;
-  flt.vehicle = document.getElementById('sel-vehicle').value;
-  flt.from = document.getElementById('d-from').value;
-  flt.to = document.getElementById('d-to').value;
-
-  FILT = ALL.filter(d => {
+  FILT = ALL.filter(d=>{
     if (flt.years.length && !flt.years.includes(d.year)) return false;
     if (flt.months.length && !flt.months.includes(d.month_name)) return false;
     if (flt.contracts.length && !flt.contracts.includes(d.contract)) return false;
     if (flt.weathers.length && !flt.weathers.includes(d.weather)) return false;
-    if (flt.daynight.length && !d.is_aggregate) {
-      const isDay = isDayTime(d.hour, d.day_night);
-      if (flt.daynight.includes('day') && !isDay && !flt.daynight.includes('night')) return false;
-      if (flt.daynight.includes('night') && isDay && !flt.daynight.includes('day')) return false;
+    if (flt.daynight.length===1 && !d.is_aggregate){
+      const isDay=isDayTime(d.hour,d.day_night);
+      if (flt.daynight[0]==='day' && !isDay) return false;
+      if (flt.daynight[0]==='night' && isDay) return false;
     }
-    if (flt.road && d.road_name !== flt.road) return false;
-    if (flt.vehicle && !splitVehicles(d.vehicle_type || '').some(v => v.includes(flt.vehicle) || flt.vehicle.includes(v))) return false;
+    if (flt.road && d.road_name!==flt.road) return false;
+    if (flt.vehicle && !splitVehicles(d.vehicle_type).some(v=>v.includes(flt.vehicle)||flt.vehicle.includes(v))) return false;
     if (flt.causes.length && !flt.causes.includes(d.cause_category)) return false;
-    if (flt.from && d.date < flt.from) return false;
-    if (flt.to && d.date > flt.to) return false;
-    // ── فلاتر المخططات والـ KPI ──
-    if (cf.month   && d.month_name !== cf.month)    return false;
-    if (cf.hour    !== null && !d.is_aggregate && d.hour !== cf.hour) return false;
-    if (cf.weather && d.weather !== cf.weather)      return false;
-    if (cf.cause   && d.cause_category !== cf.cause) return false;
-    if (cf.weekday && d.week_day !== cf.weekday)     return false;
-    if (cf.deathsOnly   && d.deaths   <= 0) return false;
-    if (cf.injuriesOnly && d.injuries <= 0 && d.deaths <= 0) return false;
+    if (flt.from && d.date<flt.from) return false;
+    if (flt.to && d.date>flt.to) return false;
+    if (cf.month && d.month_name!==cf.month) return false;
+    if (cf.hour!==null && !d.is_aggregate && d.hour!==cf.hour) return false;
+    if (cf.weather && d.weather!==cf.weather) return false;
+    if (cf.cause && d.cause_category!==cf.cause) return false;
+    if (cf.weekday && d.week_day!==cf.weekday) return false;
+    if (cf.deathsOnly && d.deaths<=0) return false;
+    if (cf.injuriesOnly && d.injuries<=0 && d.deaths<=0) return false;
     return true;
   });
 
-  document.getElementById('shown-count').textContent = FILT.length;
-  updateKPIs();
-  renderCharts();
-  updateMapMarkers();
-  renderTable();
-  renderRoadTable();
+  document.getElementById('shown-count').textContent=nf(FILT.length);
+  updateKPIs(); renderCharts(); updateMapMarkers(); renderTable(); renderRoadTable(); renderFtags();
 }
 
-// ═══════════════════════════════════════════════
-// KPIs
-// ═══════════════════════════════════════════════
-function updateKPIs() {
-  // total_incidents: للسجلات المجمّعة (2023) نستخدم الحقل، للتفصيلية نعدّ 1 لكل سجل
-  const n = FILT.reduce((s,d) => s + (d.is_aggregate ? (d.total_incidents||1) : 1), 0);
-  const deaths   = FILT.reduce((s,d) => s + d.deaths, 0);
-  const injuries = FILT.reduce((s,d) => s + d.injuries, 0);
-  const dayInc   = FILT.filter(d => !d.is_aggregate && d.hour >= 6 && d.hour < 18).length
-                 + FILT.filter(d =>  d.is_aggregate).reduce((s,d)=>s+(d.day_incidents||0),0);
-  const nightInc = FILT.filter(d => !d.is_aggregate && d.hour >= 0 && (d.hour < 6 || d.hour >= 18)).length
-                 + FILT.filter(d =>  d.is_aggregate).reduce((s,d)=>s+(d.night_incidents||0),0);
-  const roads = new Set(FILT.map(d => d.road_name).filter(Boolean)).size;
-
-  // Peak month (تفصيلي فقط)
-  const mCount = {};
-  FILT.filter(d=>!d.is_aggregate).forEach(d => { if (d.month_name) mCount[d.month_name] = (mCount[d.month_name]||0)+1; });
-  const peakMonth = Object.entries(mCount).sort((a,b) => b[1]-a[1])[0];
-
-  // Peak hour
-  const hCount = new Array(24).fill(0);
-  FILT.filter(d=>!d.is_aggregate).forEach(d => { if (d.hour >= 0) hCount[d.hour]++; });
-  const peakHour = hCount.indexOf(Math.max(...hCount));
-
-  // الإجمالي الكلي للمقارنة (بنفس طريقة الحساب)
-  const totalAll = ALL.reduce((s,d) => s + (d.is_aggregate ? (d.total_incidents||1) : 1), 0);
-  const pct = totalAll ? Math.min(100, Math.round((n/totalAll)*100)) : 100;
-
-  setKPI('k-total',   n,       'kb-total',   totalAll,                                     n);
-  setKPI('k-deaths',  deaths,  'kb-deaths',  ALL.reduce((s,d)=>s+d.deaths,0),              deaths);
-  setKPI('k-injuries',injuries,'kb-injuries', ALL.reduce((s,d)=>s+d.injuries,0),           injuries);
-  setKPI('k-day',     dayInc,  'kb-day',      n,                                            dayInc);
-  setKPI('k-night',   nightInc,'kb-night',    n,                                            nightInc);
-  setKPI('k-roads',   roads,   'kb-roads',    new Set(ALL.map(d=>d.road_name)).size,        roads);
-
-  _peakMonth = peakMonth ? peakMonth[0] : null;
-  _peakHour  = peakHour;
-  document.getElementById('k-peak-month').textContent = peakMonth ? peakMonth[0] + ' (' + peakMonth[1] + ')' : '—';
-  document.getElementById('k-peak-hour').textContent  = peakHour >= 0 ? `${peakHour}:00 – ${peakHour+1}:00` : '—';
-  document.getElementById('kpi-pct').textContent = pct + '% من الكل';
-
-  // تحديث الحالة البصرية للـ KPIs
-  toggleKpiActive('kpi-deaths-card',   cf.deathsOnly);
-  toggleKpiActive('kpi-injuries-card', cf.injuriesOnly);
-  toggleKpiActive('kpi-day-card',      flt.daynight.includes('day')   && flt.daynight.length===1);
-  toggleKpiActive('kpi-night-card',    flt.daynight.includes('night') && flt.daynight.length===1);
-  toggleKpiActive('kpi-month-card',    cf.month !== null);
-  toggleKpiActive('kpi-hour-card',     cf.hour  !== null);
-}
-
-function setKPI(valId, val, barId, total, cur) {
-  document.getElementById(valId).textContent = val.toLocaleString('ar');
-  const pct = total ? Math.round((cur/total)*100) : 0;
-  const bar = document.getElementById(barId);
-  if (bar) bar.style.width = pct + '%';
-}
-
-// ═══════════════════════════════════════════════
-// Road Table
-// ═══════════════════════════════════════════════
-function renderRoadTable() {
-  const search = (document.getElementById('road-search')?.value || '').toLowerCase();
-  const roadMap = {};
-
-  FILT.forEach(d => {
-    const k = d.road_name || 'غير محدد';
-    if (!roadMap[k]) roadMap[k] = { contract: d.contract, count:0, deaths:0, injuries:0 };
-    roadMap[k].count++;
-    roadMap[k].deaths += d.deaths;
-    roadMap[k].injuries += d.injuries;
-  });
-
-  let entries = Object.entries(roadMap).sort((a,b) => b[1].count - a[1].count);
-  if (search) entries = entries.filter(e => e[0].includes(search));
-
-  document.getElementById('road-tbody').innerHTML = entries.map(([name, s]) => `
-    <tr onclick="selectRoad('${name.replace(/'/g,"\\'")}')">
-      <td><div class="r-name" title="${name}">${name}</div></td>
-      <td><span class="mini-pill mp-blue">${s.contract}</span></td>
-      <td><span class="mini-pill mp-blue">${s.count}</span></td>
-      <td>${s.deaths > 0 ? `<span class="mini-pill mp-red">${s.deaths}</span>` : '<span style="color:var(--muted)">0</span>'}</td>
-      <td>${s.injuries > 0 ? `<span class="mini-pill mp-ora">${s.injuries}</span>` : '<span style="color:var(--muted)">0</span>'}</td>
-    </tr>
-  `).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">لا توجد بيانات</td></tr>';
-}
-
-function selectRoad(name) {
-  document.getElementById('sel-road').value = name;
-  flt.road = name;
-  applyFilters();
-  switchPTab('filter');
-}
-
-// ═══════════════════════════════════════════════
-// Chart filter toggle — النقر على المخطط يُفعّل/يُلغي الفلتر
-// ═══════════════════════════════════════════════
-function toggleCF(key, val) {
-  cf[key] = cf[key] === val ? null : val;
+/* KPI click helpers */
+function toggleKpi(key){ cf[key]=!cf[key]; applyFilters(); }
+function toggleDayNight(v){
+  if (flt.daynight.length===1 && flt.daynight[0]===v) flt.daynight=[];
+  else flt.daynight=[v];
   applyFilters();
 }
-function clearCF() {
-  cf = { month:null, hour:null, weather:null, cause:null, weekday:null, deathsOnly:false, injuriesOnly:false };
-  // reset KPI active styles
-  document.querySelectorAll('.kpi').forEach(k => k.classList.remove('kpi-active'));
+function togglePeakMonth(){ if(cf.month){cf.month=null}else if(_peakMonth){cf.month=_peakMonth} applyFilters(); }
+function togglePeakHour(){ if(cf.hour!==null){cf.hour=null}else if(_peakHour>=0){cf.hour=_peakHour} applyFilters(); }
+
+/* ═══════════════════ KPIs ═══════════════════ */
+function countIncidents(arr){ return arr.reduce((s,d)=>s+(d.is_aggregate?(d.total_incidents||1):1),0); }
+
+function updateKPIs(){
+  const n = countIncidents(FILT);
+  const deaths = FILT.reduce((s,d)=>s+d.deaths,0);
+  const injuries = FILT.reduce((s,d)=>s+d.injuries,0);
+  const dayInc = FILT.filter(d=>!d.is_aggregate && isDayTime(d.hour,d.day_night)).length
+               + FILT.filter(d=>d.is_aggregate).reduce((s,d)=>s+(d.day_incidents||0),0);
+  const nightInc = FILT.filter(d=>!d.is_aggregate && !isDayTime(d.hour,d.day_night)).length
+                 + FILT.filter(d=>d.is_aggregate).reduce((s,d)=>s+(d.night_incidents||0),0);
+  const roads = new Set(FILT.map(d=>d.road_name).filter(Boolean)).size;
+
+  const mCount={};
+  FILT.filter(d=>!d.is_aggregate).forEach(d=>{ if(d.month_name) mCount[d.month_name]=(mCount[d.month_name]||0)+1; });
+  const peakMonth=Object.entries(mCount).sort((a,b)=>b[1]-a[1])[0];
+  const hCount=new Array(24).fill(0);
+  FILT.filter(d=>!d.is_aggregate).forEach(d=>{ if(d.hour>=0) hCount[d.hour]++; });
+  const maxH=Math.max(...hCount);
+  const peakHour=maxH>0?hCount.indexOf(maxH):-1;
+
+  const totalAll=countIncidents(ALL);
+  setKPI('k-total',n,'kb-total',totalAll,n);
+  setKPI('k-deaths',deaths,'kb-deaths',ALL.reduce((s,d)=>s+d.deaths,0),deaths);
+  setKPI('k-injuries',injuries,'kb-injuries',ALL.reduce((s,d)=>s+d.injuries,0),injuries);
+  setKPI('k-day',dayInc,'kb-day',n,dayInc);
+  setKPI('k-night',nightInc,'kb-night',n,nightInc);
+  setKPI('k-roads',roads,'kb-roads',new Set(ALL.map(d=>d.road_name).filter(Boolean)).size,roads);
+
+  _peakMonth=peakMonth?peakMonth[0]:null;
+  _peakHour=peakHour;
+  document.getElementById('k-peak-month').textContent=peakMonth?`${peakMonth[0]} (${nf(peakMonth[1])})`:'—';
+  document.getElementById('k-peak-hour').textContent=peakHour>=0?`${peakHour}:00 – ${peakHour+1}:00`:'—';
+
+  kpiActive('kpi-deaths-card',cf.deathsOnly);
+  kpiActive('kpi-injuries-card',cf.injuriesOnly);
+  kpiActive('kpi-day-card',flt.daynight.length===1&&flt.daynight[0]==='day');
+  kpiActive('kpi-night-card',flt.daynight.length===1&&flt.daynight[0]==='night');
+  kpiActive('kpi-month-card',cf.month!==null);
+  kpiActive('kpi-hour-card',cf.hour!==null);
 }
-
-// ألوان النقر: عنصر محدد ساطع، باقيها خافتة
-function highlightColors(labels, activeLabel, baseColors, alpha='cc', dimAlpha='33') {
-  return labels.map((l,i) => {
-    const base = (typeof baseColors === 'string') ? baseColors : baseColors[i % baseColors.length];
-    if (!activeLabel) return base + alpha;
-    return l === activeLabel ? base + 'ff' : base + dimAlpha;
-  });
+function setKPI(id,val,barId,total,cur){
+  document.getElementById(id).textContent=nf(val);
+  const bar=document.getElementById(barId);
+  if(bar) bar.style.width=(total?Math.round(cur/total*100):0)+'%';
 }
+function kpiActive(id,on){ document.getElementById(id).classList.toggle('active',on); }
 
-// ═══════════════════════════════════════════════
-// Charts
-// ═══════════════════════════════════════════════
-const CO = {
-  responsive:true, maintainAspectRatio:true,
-  plugins:{ legend:{ display:false }, tooltip:{ rtl:true, titleFont:{family:'Segoe UI'}, bodyFont:{family:'Segoe UI'} }},
-  scales:{}
-};
-
-function mkChart(id, type, labels, datasets, extraOpts={}, onClickFn=null) {
-  const ctx = document.getElementById(id);
-  if (!ctx) return;
-  if (charts[id]) charts[id].destroy();
-  const gridC = 'rgba(48,54,61,.5)', tickC = '#8b949e';
-  const opts = {
-    ...CO, ...extraOpts,
-    plugins: { ...CO.plugins, ...(extraOpts.plugins||{}) },
-    cursor: onClickFn ? 'pointer' : 'default',
+/* ═══════════════════ Active filter tags ═══════════════════ */
+function renderFtags(){
+  const el=document.getElementById('ftags'); el.innerHTML='';
+  const tag=(label,fn)=>{
+    const t=document.createElement('span'); t.className='ftag';
+    t.innerHTML=label+' <b>✕</b>'; t.onclick=fn; el.appendChild(t);
   };
-  if (onClickFn) {
-    opts.onClick = (event, elements) => {
-      if (!elements.length) return;
-      const label = labels[elements[0].index];
-      onClickFn(label);
-    };
-    // تغيير شكل المؤشر عند التحويم
-    opts.onHover = (event, elements) => {
-      event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
-    };
-  }
-  if (type !== 'pie' && type !== 'doughnut') {
-    opts.scales = {
-      x:{ ticks:{color:tickC,font:{family:'Segoe UI',size:10}}, grid:{color:gridC} },
-      y:{ ticks:{color:tickC,font:{family:'Segoe UI',size:10}}, grid:{color:gridC} },
-      ...(extraOpts.scales||{})
-    };
-  }
-  charts[id] = new Chart(ctx, { type, data:{ labels, datasets }, options:opts });
-  // رسم حافة ملوّنة على البطاقة إذا كان المخطط مفعّلاً
-  const card = ctx.closest('.mini-chart-card');
-  if (card) card.style.borderColor = onClickFn ? 'var(--border)' : 'var(--border)';
+  if (flt.years.length && flt.years.length<3) tag('📆 '+flt.years.join('، '),()=>{flt.years=[2023,2024,2025];syncChips('year-chips',flt.years);applyFilters();});
+  flt.months.forEach(m=>tag('🗓️ '+m,()=>{flt.months=flt.months.filter(x=>x!==m);syncChips('month-chips',flt.months);applyFilters();}));
+  flt.contracts.forEach(c=>tag('📋 عقد '+c,()=>{flt.contracts=flt.contracts.filter(x=>x!==c);syncChips('contract-chips',flt.contracts);applyFilters();}));
+  flt.weathers.forEach(w=>tag('⛅ '+w,()=>{flt.weathers=flt.weathers.filter(x=>x!==w);syncChips('weather-chips',flt.weathers);applyFilters();}));
+  flt.causes.forEach(c=>tag('⚠️ '+c,()=>{flt.causes=flt.causes.filter(x=>x!==c);syncChips('cause-chips',flt.causes);applyFilters();}));
+  if (flt.daynight.length===1) tag(flt.daynight[0]==='day'?'☀️ نهاري':'🌙 ليلي',()=>{flt.daynight=[];applyFilters();});
+  if (flt.road) tag('🛣️ '+flt.road.slice(0,22),()=>{document.getElementById('sel-road').value='';selectedRoad='';applyFilters();});
+  if (flt.vehicle) tag('🚗 '+flt.vehicle,()=>{document.getElementById('sel-vehicle').value='';applyFilters();});
+  if (flt.from||flt.to) tag('📅 '+(flt.from||'…')+' ← '+(flt.to||'…'),()=>{document.getElementById('d-from').value='';document.getElementById('d-to').value='';applyFilters();});
+  if (cf.month) tag('📊 '+cf.month,()=>{cf.month=null;applyFilters();});
+  if (cf.hour!==null) tag('⏰ الساعة '+cf.hour,()=>{cf.hour=null;applyFilters();});
+  if (cf.weather) tag('⛅ '+cf.weather,()=>{cf.weather=null;applyFilters();});
+  if (cf.cause) tag('⚠️ '+cf.cause,()=>{cf.cause=null;applyFilters();});
+  if (cf.weekday) tag('📆 '+cf.weekday,()=>{cf.weekday=null;applyFilters();});
+  if (cf.deathsOnly) tag('🕯️ وفيات فقط',()=>{cf.deathsOnly=false;applyFilters();});
+  if (cf.injuriesOnly) tag('🩹 إصابات فقط',()=>{cf.injuriesOnly=false;applyFilters();});
 }
-
-function countBy(arr, key) {
-  const c = {};
-  arr.forEach(d => { const v = (d[key]||'غير محدد').trim(); c[v] = (c[v]||0)+1; });
-  return c;
-}
-
-function renderCharts() {
-  const gridC = 'rgba(48,54,61,.5)', tickC='#8b949e';
-
-  // ── 1. الحوادث شهرياً ──────────────────────
-  const mData = {}; MONTHS.forEach(m => mData[m]=0);
-  FILT.forEach(d => { if(d.month_name) mData[d.month_name]++; });
-  const mLabels = MONTHS.map(m=>m.slice(0,3));
-  const mActive = cf.month ? cf.month.slice(0,3) : null;
-  mkChart('mc-monthly','bar', mLabels, [{
-    data: MONTHS.map(m=>mData[m]),
-    backgroundColor: mLabels.map((l,i) => mActive
-      ? (l===mActive ? PALETTE[i%PALETTE.length]+'ff' : PALETTE[i%PALETTE.length]+'33')
-      : PALETTE[i%PALETTE.length]+'aa'),
-    borderColor: mLabels.map((l,i) => PALETTE[i%PALETTE.length]),
-    borderWidth: mLabels.map(l => mActive && l===mActive ? 2 : 1),
-    borderRadius:3,
-  }], {}, label => toggleCF('month', MONTHS.find(m=>m.slice(0,3)===label)));
-  markActiveCard('mc-monthly', cf.month !== null);
-
-  // ── 2. الوفيات / الإصابات ──────────────────
-  const mD={}, mI={};
-  MONTHS.forEach(m=>{mD[m]=0;mI[m]=0;});
-  FILT.forEach(d=>{ if(d.month_name){mD[d.month_name]+=d.deaths; mI[d.month_name]+=d.injuries;} });
-  mkChart('mc-casualties','line', mLabels, [
-    { label:'وفيات',  data:MONTHS.map(m=>mD[m]), borderColor:'#f85149', backgroundColor:'rgba(248,81,73,.1)', tension:.4, fill:true, pointRadius:3, pointHoverRadius:5 },
-    { label:'إصابات', data:MONTHS.map(m=>mI[m]), borderColor:'#f0883e', backgroundColor:'rgba(240,136,62,.1)', tension:.4, fill:true, pointRadius:3, pointHoverRadius:5 }
-  ], { plugins:{ legend:{ display:true, labels:{color:'#8b949e',boxWidth:10,font:{size:10,family:'Segoe UI'}} }}},
-  label => toggleCF('month', MONTHS.find(m=>m.slice(0,3)===label)));
-  markActiveCard('mc-casualties', cf.month !== null);
-
-  // ── 3. الساعات الخطرة ──────────────────────
-  const hData = new Array(24).fill(0);
-  FILT.forEach(d=>{ if(d.hour>=0) hData[d.hour]++; });
-  const hLabels = Array.from({length:24},(_,i)=>`${i}`);
-  mkChart('mc-hourly','bar', hLabels, [{
-    data: hData,
-    backgroundColor: hLabels.map((l,i) => {
-      const active = cf.hour !== null;
-      const sel = cf.hour === i;
-      if (active) return sel ? '#f85149ff' : '#f8514922';
-      return hData[i] > 12 ? '#f8514999' : '#58a6ff55';
-    }),
-    borderColor: hLabels.map((l,i) => hData[i] > 12 ? '#f85149' : '#58a6ff'),
-    borderWidth:1, borderRadius:2,
-  }], {}, label => toggleCF('hour', cf.hour === parseInt(label) ? null : parseInt(label)));
-  markActiveCard('mc-hourly', cf.hour !== null);
-
-  // ── 4. حالة الطقس ──────────────────────────
-  const wC = countBy(FILT,'weather');
-  const wE = Object.entries(wC).filter(e=>e[0]).sort((a,b)=>b[1]-a[1]);
-  const wLabels = wE.map(e=>e[0]);
-  mkChart('mc-weather','doughnut', wLabels, [{
-    data: wE.map(e=>e[1]),
-    backgroundColor: wLabels.map((l,i) => cf.weather
-      ? (l===cf.weather ? PALETTE[i%PALETTE.length]+'ff' : PALETTE[i%PALETTE.length]+'22')
-      : PALETTE[i%PALETTE.length]+'cc'),
-    borderColor: wLabels.map((l,i)=> l===cf.weather ? '#fff' : '#1c2333'),
-    borderWidth: wLabels.map(l => l===cf.weather ? 3 : 2),
-  }], { plugins:{ legend:{ display:true, position:'bottom', labels:{color:'#8b949e',boxWidth:8,font:{size:9,family:'Segoe UI'},padding:6}}}},
-  label => toggleCF('weather', label));
-  markActiveCard('mc-weather', cf.weather !== null);
-
-  // ── 5. أسباب الحوادث ───────────────────────
-  const causeData = {};
-  FILT.forEach(d=>{ if(d.cause_category) causeData[d.cause_category]=(causeData[d.cause_category]||0)+1; });
-  const cE = Object.entries(causeData).sort((a,b)=>b[1]-a[1]);
-  const cLabels = cE.map(e=>e[0]);
-  mkChart('mc-causes','bar', cLabels, [{
-    data: cE.map(e=>e[1]),
-    backgroundColor: cLabels.map((l,i) => cf.cause
-      ? (l===cf.cause ? PALETTE[i%PALETTE.length]+'ff' : PALETTE[i%PALETTE.length]+'22')
-      : PALETTE[i%PALETTE.length]+'99'),
-    borderColor: cLabels.map((l,i) => PALETTE[i%PALETTE.length]),
-    borderWidth: cLabels.map(l => l===cf.cause ? 2 : 1),
-    borderRadius:3,
-  }], { indexAxis:'y' }, label => toggleCF('cause', label));
-  markActiveCard('mc-causes', cf.cause !== null);
-
-  // ── 6. أيام الأسبوع ────────────────────────
-  const dData = {}; DAYS7.forEach(d=>dData[d]=0);
-  FILT.forEach(d=>{ if(d.week_day) dData[d.week_day]=(dData[d.week_day]||0)+1; });
-  const dLabels = DAYS7.map(d=>d.slice(0,3));
-  mkChart('mc-days','bar', dLabels, [{
-    data: DAYS7.map(d=>dData[d]),
-    backgroundColor: dLabels.map((l,i) => {
-      const active = cf.weekday !== null;
-      const sel = cf.weekday === DAYS7[i];
-      if (active) return sel ? '#f85149ff' : '#f8514922';
-      return (i===5||i===6) ? '#f8514999' : '#58a6ff77';
-    }),
-    borderColor: dLabels.map((_,i) => (i===5||i===6)?'#f85149':'#58a6ff'),
-    borderWidth:1, borderRadius:3,
-  }], {}, label => toggleCF('weekday', DAYS7.find(d=>d.slice(0,3)===label)));
-  markActiveCard('mc-days', cf.weekday !== null);
-}
-
-// إبراز بطاقة المخطط عند التفعيل
-function markActiveCard(chartId, isActive) {
-  const card = document.getElementById(chartId)?.closest('.mini-chart-card');
-  if (!card) return;
-  card.style.borderColor = isActive ? 'var(--accent)' : 'var(--border)';
-  card.style.boxShadow   = isActive ? '0 0 0 1px var(--accent)' : 'none';
-}
-
-// ═══════════════════════════════════════════════
-// Map
-// ═══════════════════════════════════════════════
-const TILE_LAYERS = {
-  google: {
-    url: 'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-    opts: { subdomains:['0','1','2','3'], attribution:'© Google Maps', maxZoom:21, tileSize:256 }
-  },
-  hybrid: {
-    url: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-    opts: { subdomains:['0','1','2','3'], attribution:'© Google Maps', maxZoom:21, tileSize:256 }
-  },
-  esri: {
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    opts: { attribution:'© Esri, Maxar, Earthstar Geographics', maxZoom:19 }
-  },
-  dark: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    opts: { attribution:'© OpenStreetMap © CARTO', maxZoom:20 }
-  }
-};
-
-let activeLayer = null;
-let currentLayerKey = 'google';
-
-function initMap() {
-  mapObj = L.map('map', {
-    center: [27.52, 41.69], zoom: 7,
-    zoomControl: true, attributionControl: false,
-    tap: false,          // يمنع تعارض أحداث اللمس على iOS
-    closePopupOnClick: false  // لا يُغلق الـ popup عند لمس الخريطة
+function syncChips(id,arr){
+  document.querySelectorAll('#'+id+' .chip').forEach(c=>{
+    c.classList.toggle('on',arr.includes(c.dataset.val)||arr.includes(+c.dataset.val));
   });
-  L.control.attribution({ position:'bottomleft', prefix:false }).addTo(mapObj);
+}
+
+/* ═══════════════════ Road table ═══════════════════ */
+function renderRoadTable(){
+  const search=(document.getElementById('road-search').value||'').trim();
+  const agg={};
+  FILT.forEach(d=>{
+    if(!d.road_name) return;
+    if(!agg[d.road_name]) agg[d.road_name]={n:0,deaths:0};
+    agg[d.road_name].n += d.is_aggregate?(d.total_incidents||1):1;
+    agg[d.road_name].deaths += d.deaths;
+  });
+  let rows=Object.entries(agg).sort((a,b)=>b[1].n-a[1].n);
+  if (search) rows=rows.filter(r=>r[0].includes(search));
+  document.getElementById('road-body').innerHTML=rows.slice(0,40).map(([road,v])=>`
+    <tr class="${road===selectedRoad?'sel':''}" data-road="${road.replace(/"/g,'&quot;')}">
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${road}">${road}</td>
+      <td>${nf(v.n)}</td>
+      <td>${v.deaths>0?`<span class="badge b-red">${nf(v.deaths)}</span>`:'<span class="badge b-zero">٠</span>'}</td>
+    </tr>`).join('');
+  document.querySelectorAll('#road-body tr').forEach(tr=>{
+    tr.onclick=()=>selectRoad(tr.dataset.road);
+  });
+}
+function selectRoad(road){
+  selectedRoad = selectedRoad===road ? '' : road;
+  document.getElementById('sel-road').value=selectedRoad;
+  applyFilters();
+}
+
+/* ═══════════════════ Charts ═══════════════════ */
+Chart.defaults.font.family="'IBM Plex Sans Arabic',sans-serif";
+Chart.defaults.font.size=10;
+Chart.defaults.color='#8b93a7';
+Chart.defaults.borderColor='#2a3655';
+
+const BLUE='#3987e5';
+const CAT=['#3987e5','#199e70','#c98500','#9085e9','#e66767','#d95926'];
+const TOOLTIP={rtl:true,backgroundColor:'#1c2947',borderColor:'#3a4a75',borderWidth:1,
+  titleColor:'#f2f4f8',bodyColor:'#c3c9d6',padding:9,cornerRadius:8};
+
+function hexRgb(h){const x=h.replace('#','');return parseInt(x.slice(0,2),16)+','+parseInt(x.slice(2,4),16)+','+parseInt(x.slice(4,6),16);}
+function paint(labels,activeVal,hex){
+  return labels.map(l=>(activeVal===null||activeVal===undefined)?hex:(String(l)===String(activeVal)?hex:`rgba(${hexRgb(hex)},.22)`));
+}
+
+function mkChart(id,type,data,extra={},onClick=null){
+  if (charts[id]) charts[id].destroy();
+  const opts={
+    responsive:true, maintainAspectRatio:false, animation:{duration:350},
+    plugins:{ legend:{display:false}, tooltip:TOOLTIP },
+    scales:(type==='doughnut')?{}:{
+      x:{grid:{display:false},ticks:{color:'#8b93a7'}},
+      y:{grid:{color:'#232e4d'},ticks:{color:'#8b93a7',precision:0},border:{display:false},beginAtZero:true}
+    },
+    ...extra
+  };
+  if (onClick){
+    opts.onClick=(e,els)=>{ if(els.length) onClick(els[0].index); };
+    opts.onHover=(e,els)=>{ e.native.target.style.cursor=els.length?'pointer':'default'; };
+  }
+  charts[id]=new Chart(document.getElementById(id),{type,data,options:opts});
+}
+
+function renderCharts(){
+  /* ① monthly bar */
+  const mData={}; MONTHS.forEach(m=>mData[m]=0);
+  FILT.forEach(d=>{ if(d.month_name&&mData[d.month_name]!==undefined) mData[d.month_name]+= d.is_aggregate?(d.total_incidents||1):1; });
+  mkChart('c-monthly','bar',{
+    labels:MONTHS.map(m=>m.slice(0,3)),
+    datasets:[{data:MONTHS.map(m=>mData[m]),backgroundColor:paint(MONTHS,cf.month,BLUE),
+      borderRadius:4,borderSkipped:'bottom',barPercentage:.75,categoryPercentage:.85}]
+  },{},i=>{ cf.month=cf.month===MONTHS[i]?null:MONTHS[i]; applyFilters(); });
+
+  /* ② casualties line (2 series → legend) */
+  const dD={},iD={}; MONTHS.forEach(m=>{dD[m]=0;iD[m]=0});
+  FILT.forEach(d=>{ if(d.month_name&&dD[d.month_name]!==undefined){dD[d.month_name]+=d.deaths;iD[d.month_name]+=d.injuries} });
+  mkChart('c-casualties','line',{
+    labels:MONTHS.map(m=>m.slice(0,3)),
+    datasets:[
+      {label:'الوفيات',data:MONTHS.map(m=>dD[m]),borderColor:'#d03b3b',backgroundColor:'rgba(208,59,59,.12)',
+       borderWidth:2,pointRadius:2.5,pointHoverRadius:5,tension:.35,fill:true},
+      {label:'الإصابات',data:MONTHS.map(m=>iD[m]),borderColor:'#ec835a',backgroundColor:'rgba(236,131,90,.10)',
+       borderWidth:2,pointRadius:2.5,pointHoverRadius:5,tension:.35,fill:true}
+    ]
+  },{plugins:{legend:{display:true,rtl:true,position:'top',labels:{color:'#c3c9d6',boxWidth:10,boxHeight:10,font:{size:10}}},
+      tooltip:TOOLTIP}});
+
+  /* ③ hours bar */
+  const hArr=new Array(24).fill(0);
+  FILT.forEach(d=>{ if(!d.is_aggregate&&d.hour>=0) hArr[d.hour]++; });
+  const hLabels=Array.from({length:24},(_,i)=>i);
+  mkChart('c-hours','bar',{
+    labels:hLabels,
+    datasets:[{data:hArr,backgroundColor:paint(hLabels,cf.hour,'#c98500'),
+      borderRadius:3,borderSkipped:'bottom',barPercentage:.8,categoryPercentage:.9}]
+  },{scales:{x:{grid:{display:false},ticks:{color:'#8b93a7',font:{size:8},maxRotation:0,autoSkip:true}},
+      y:{grid:{color:'#232e4d'},ticks:{color:'#8b93a7',precision:0},border:{display:false},beginAtZero:true}}},
+    i=>{ cf.hour=cf.hour===i?null:i; applyFilters(); });
+
+  /* ④ weather doughnut — categorical slots, fixed order */
+  const wC={};
+  FILT.forEach(d=>{ const w=(d.weather||'').trim(); if(w) wC[w]=(wC[w]||0)+(d.is_aggregate?(d.total_incidents||1):1); });
+  const wE=Object.entries(wC).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const wTotal = wE.reduce((s,e)=>s+e[1],0)||1;
+  mkChart('c-weather','doughnut',{
+    labels:wE.map(e=>e[0]),
+    datasets:[{data:wE.map(e=>e[1]),
+      backgroundColor:wE.map((e,i)=>cf.weather&&cf.weather!==e[0]?`rgba(${hexRgb(CAT[i%6])},.25)`:CAT[i%6]),
+      borderColor:'#16213e',borderWidth:2,hoverOffset:6}]
+  },{cutout:'62%',plugins:{
+      legend:{display:true,rtl:true,position:'left',labels:{color:'#c3c9d6',boxWidth:10,boxHeight:10,font:{size:10},
+        generateLabels:c=>c.data.labels.map((l,i)=>({text:`${l} ${Math.round(c.data.datasets[0].data[i]/wTotal*100)}٪`,
+          fillStyle:c.data.datasets[0].backgroundColor[i],strokeStyle:'transparent',index:i,fontColor:'#c3c9d6'}))}},
+      tooltip:TOOLTIP}},
+    i=>{ const w=wE[i][0]; cf.weather=cf.weather===w?null:w; applyFilters(); });
+
+  /* ⑤ causes horizontal bar */
+  const cC={};
+  FILT.forEach(d=>{ const c=d.cause_category; if(c&&c!=='غير محدد') cC[c]=(cC[c]||0)+1; });
+  const cE=Object.entries(cC).sort((a,b)=>b[1]-a[1]);
+  mkChart('c-causes','bar',{
+    labels:cE.map(e=>e[0]),
+    datasets:[{data:cE.map(e=>e[1]),backgroundColor:paint(cE.map(e=>e[0]),cf.cause,'#199e70'),
+      borderRadius:4,borderSkipped:'start',barPercentage:.7}]
+  },{indexAxis:'y',scales:{
+      x:{grid:{color:'#232e4d'},ticks:{color:'#8b93a7',precision:0},beginAtZero:true,border:{display:false}},
+      y:{grid:{display:false},ticks:{color:'#c3c9d6',font:{size:9.5}}}
+    }},i=>{ const c=cE[i][0]; cf.cause=cf.cause===c?null:c; applyFilters(); });
+
+  /* ⑥ weekdays bar */
+  const dCount={}; DAYS7.forEach(d=>dCount[d]=0);
+  FILT.forEach(d=>{ if(d.week_day&&dCount[d.week_day]!==undefined) dCount[d.week_day]++; });
+  mkChart('c-days','bar',{
+    labels:DAYS7,
+    datasets:[{data:DAYS7.map(d=>dCount[d]),backgroundColor:paint(DAYS7,cf.weekday,'#9085e9'),
+      borderRadius:4,borderSkipped:'bottom',barPercentage:.7,categoryPercentage:.8}]
+  },{scales:{x:{grid:{display:false},ticks:{color:'#8b93a7',font:{size:9}}},
+      y:{grid:{color:'#232e4d'},ticks:{color:'#8b93a7',precision:0},border:{display:false},beginAtZero:true}}},
+    i=>{ cf.weekday=cf.weekday===DAYS7[i]?null:DAYS7[i]; applyFilters(); });
+}
+
+/* ═══════════════════ Map ═══════════════════ */
+const TILE_LAYERS={
+  google:{url:'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',opts:{maxZoom:20,attribution:'Google'}},
+  hybrid:{url:'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',opts:{maxZoom:20,attribution:'Google'}},
+  esri:{url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',opts:{maxZoom:19,attribution:'ESRI'}},
+  dark:{url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',opts:{maxZoom:20,attribution:'CartoDB'}}
+};
+const SEV_COLOR={red:'#d03b3b',orange:'#ec835a',green:'#0ca30c'};
+
+function initMap(){
+  if (mapObj) return;
+  mapObj=L.map('map',{center:[27.52,41.69],zoom:7,zoomControl:true,attributionControl:false,
+    tap:false,closePopupOnClick:false});
+  L.control.attribution({position:'bottomleft',prefix:false}).addTo(mapObj);
   applyTileLayer('google');
-  // markersLayer will be created in updateMapMarkers
+}
+function applyTileLayer(key){
+  if(activeLayer) mapObj.removeLayer(activeLayer);
+  const t=TILE_LAYERS[key];
+  activeLayer=L.tileLayer(t.url,t.opts).addTo(mapObj);
+  document.querySelectorAll('#map-layers .lbtn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('lb-'+key);
+  if(btn) btn.classList.add('active');
+}
+function setLayer(k){ applyTileLayer(k); }
+function severity(d){ return d.deaths>0?'red':d.injuries>0?'orange':'green'; }
+
+function clusterIcon(cluster){
+  const ms=cluster.getAllChildMarkers();
+  let sev='green';
+  for(const m of ms){ if(m._sev==='red'){sev='red';break} if(m._sev==='orange')sev='orange'; }
+  const n=ms.length, sz=n<10?36:n<50?44:n<100?52:60;
+  return L.divIcon({html:`<div class="cluster-icon cluster-${sev}" style="width:${sz}px;height:${sz}px;font-size:${sz<44?12:14}px">${n}</div>`,
+    iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],className:''});
+}
+
+function toggleAllMode(){
+  allMode=!allMode;
+  const b=document.getElementById('allmode-btn');
+  b.classList.toggle('active',allMode);
+  b.textContent=allMode?'الوفيات فقط':'عرض كل الحوادث';
+  if(allMode) toast('⚠️ إحداثيات الحوادث غير المميتة تقريبية (مُقحمة من العلامات الكيلومترية)');
   updateMapMarkers();
 }
 
-function applyTileLayer(key) {
-  if (activeLayer) mapObj.removeLayer(activeLayer);
-  const t = TILE_LAYERS[key];
-  activeLayer = L.tileLayer(t.url, t.opts).addTo(mapObj);
-  currentLayerKey = key;
-  document.querySelectorAll('.lbtn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('lb-' + key);
-  if (btn) btn.classList.add('active');
-}
+function updateMapMarkers(){
+  if(!mapObj) return;
+  if(markersLayer){ mapObj.removeLayer(markersLayer); markersLayer=null; }
+  markersLayer=L.markerClusterGroup({iconCreateFunction:clusterIcon,maxClusterRadius:60,
+    spiderfyOnMaxZoom:true,showCoverageOnHover:false,zoomToBoundsOnClick:true,
+    animate:true,animateAddingMarkers:false,disableClusteringAtZoom:14});
 
-function setLayer(key) { applyTileLayer(key); }
-
-// ── Severity helpers ──────────────────────────────────────────
-function severity(inc) {
-  if (inc.deaths   > 0) return 'red';
-  if (inc.injuries > 0) return 'orange';
-  return 'green';
-}
-
-const SEV_COLOR = { red:'#e53935', orange:'#f57c00', green:'#2e7d32' };
-const SEV_LIGHT = { red:'#ef9a9a', orange:'#ffcc80', green:'#a5d6a7' };
-
-// Cluster icon factory — colour driven by worst severity inside
-function clusterIcon(cluster) {
-  const markers = cluster.getAllChildMarkers();
-  const total = markers.length;
-  let sev = 'green';
-  for (const m of markers) {
-    if (m._sev === 'red')    { sev = 'red';    break; }
-    if (m._sev === 'orange') { sev = 'orange'; }
-  }
-  const sz = total < 10 ? 36 : total < 50 ? 44 : total < 100 ? 52 : 60;
-  return L.divIcon({
-    html: `<div class="cluster-icon cluster-${sev}" style="width:${sz}px;height:${sz}px;font-size:${sz<44?12:14}px">${total}</div>`,
-    iconSize: [sz, sz],
-    iconAnchor: [sz/2, sz/2],
-    className: ''
-  });
-}
-
-// ── Build / rebuild marker cluster layer ─────────────────────
-function updateMapMarkers() {
-  if (!mapObj) return;
-
-  // Remove previous cluster layer
-  if (markersLayer) { mapObj.removeLayer(markersLayer); markersLayer = null; }
-
-  markersLayer = L.markerClusterGroup({
-    iconCreateFunction: clusterIcon,
-    maxClusterRadius: 60,
-    spiderfyOnMaxZoom: true,
-    showCoverageOnHover: false,
-    zoomToBoundsOnClick: true,
-    animate: true,
-    animateAddingMarkers: false,
-    disableClusteringAtZoom: 14   // نقاط مفككة عند zoom 14+
-  });
-
-  FILT.forEach(inc => {
-    if (!inc.lat || !inc.lng) return;
-    if (inc.deaths <= 0) return;  // الخريطة تعرض حوادث الوفيات فقط
-
-    const sev   = severity(inc);
-    const color = SEV_COLOR[sev];
-    const dn    = isDayTime(inc.hour, inc.day_night) ? '☀️ نهار' : '🌙 ليل';
-
-    let iconHtml, sz;
-    if (inc.is_aggregate) {
-      // 2023: مربّع بحجم يعكس عدد الحوادث
-      const cnt = inc.total_incidents || 1;
-      sz = Math.max(12, Math.min(28, 12 + Math.sqrt(cnt) * 1.5));
-      iconHtml = `<div style="
-        width:${sz}px;height:${sz}px;background:${color};
-        border:2px solid #fff;border-radius:3px;
-        box-shadow:0 0 0 1.5px ${color},0 2px 6px rgba(0,0,0,.55);
-        display:flex;align-items:center;justify-content:center;
-        font-size:8px;color:#fff;font-weight:700;
-      ">${cnt}</div>`;
-    } else {
-      sz = sev === 'red' ? 14 : sev === 'orange' ? 12 : 10;
-      iconHtml = `<div style="
-        width:${sz}px;height:${sz}px;background:${color};
-        border:2px solid #fff;border-radius:50%;
-        box-shadow:0 0 0 1.5px ${color},0 2px 6px rgba(0,0,0,.55);
-      "></div>`;
+  let shown=0;
+  FILT.forEach(inc=>{
+    if(!inc.lat||!inc.lng) return;
+    if(!allMode && inc.deaths<=0) return;   /* الوضع الافتراضي: وفيات فقط (GPS موثوق) */
+    shown++;
+    const sev=severity(inc), color=SEV_COLOR[sev];
+    let iconHtml,sz;
+    if(inc.is_aggregate){
+      const cnt=inc.total_incidents||1;
+      sz=Math.max(14,Math.min(30,12+Math.sqrt(cnt)*1.6));
+      iconHtml=`<div style="width:${sz}px;height:${sz}px;background:${color};border:2px solid #fff;border-radius:4px;
+        box-shadow:0 0 0 1.5px ${color},0 2px 8px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;
+        font-size:9px;color:#fff;font-weight:700">${cnt}</div>`;
+    }else{
+      sz=sev==='red'?14:sev==='orange'?12:10;
+      iconHtml=`<div style="width:${sz}px;height:${sz}px;background:${color};border:2px solid #fff;border-radius:50%;
+        box-shadow:0 0 0 1.5px ${color},0 2px 8px rgba(0,0,0,.55)"></div>`;
     }
-
-    const icon = L.divIcon({
-      html: iconHtml,
-      iconSize:   [sz, sz],
-      iconAnchor: [sz/2, sz/2],
-      className:  ''
-    });
-
-    const m = L.marker([inc.lat, inc.lng], { icon });
-    m._sev = sev;   // store for cluster colouring
-
+    const m=L.marker([inc.lat,inc.lng],{icon:L.divIcon({html:iconHtml,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],className:''})});
+    m._sev=sev;
+    const dn=isDayTime(inc.hour,inc.day_night)?'☀️ نهار':'🌙 ليل';
     m.bindPopup(`
-      <div dir="rtl" style="font-family:Tahoma,Arial;min-width:240px;font-size:12px;color:#111">
-        <div style="font-weight:700;font-size:13px;margin-bottom:8px;
-             border-bottom:3px solid ${color};padding-bottom:6px;color:${color}">
-          🚨 حادث مروري
-        </div>
-        <table style="width:100%;border-collapse:collapse;line-height:1.75">
-          <tr><td style="color:#888;padding-left:6px;white-space:nowrap">📅 التاريخ</td><td><b>${inc.date}</b> ${inc.time||''}</td></tr>
-          <tr><td style="color:#888;padding-left:6px;white-space:nowrap">🛣️ الطريق</td><td><b>${inc.road_name}</b></td></tr>
-          <tr><td style="color:#888;padding-left:6px;white-space:nowrap">📋 العقد</td><td>${inc.contract}</td></tr>
-          <tr><td style="color:#888;padding-left:6px;white-space:nowrap">📍 الكيلو</td><td dir="ltr">${inc.km_mark}</td></tr>
-          <tr><td style="color:#888;padding-left:6px;white-space:nowrap">🚗 المركبة</td><td>${inc.vehicle_type}</td></tr>
-          <tr><td style="color:#888;padding-left:6px;white-space:nowrap">⛅ الطقس</td><td>${inc.weather}</td></tr>
-          <tr><td style="color:#888;padding-left:6px;white-space:nowrap">${dn}</td><td>${inc.month_name} — ${inc.hour>=0?inc.hour+':00':'—'}</td></tr>
+      <div dir="rtl" style="font-family:'IBM Plex Sans Arabic',Tahoma;min-width:235px;font-size:12px;color:#1a1a19">
+        <div style="font-weight:700;font-size:13px;margin-bottom:7px;border-bottom:3px solid ${color};padding-bottom:5px;color:${color}">
+          ${inc.deaths>0?'🕯️ حادث وفاة':'🚧 حادث مروري'}</div>
+        <table style="width:100%;border-collapse:collapse;line-height:1.8">
+          <tr><td style="color:#888;padding-left:8px;white-space:nowrap">📅 التاريخ</td><td><b>${inc.date||'—'}</b> ${inc.time||''}</td></tr>
+          <tr><td style="color:#888;padding-left:8px">🛣️ الطريق</td><td><b>${inc.road_name||'—'}</b></td></tr>
+          <tr><td style="color:#888;padding-left:8px">📋 العقد</td><td>${inc.contract||'—'}</td></tr>
+          <tr><td style="color:#888;padding-left:8px">📍 الكيلو</td><td dir="ltr">${inc.km_mark||'—'}</td></tr>
+          <tr><td style="color:#888;padding-left:8px">🚗 المركبة</td><td>${inc.vehicle_type||'—'}</td></tr>
+          <tr><td style="color:#888;padding-left:8px">⛅ الطقس</td><td>${inc.weather||'—'}</td></tr>
+          <tr><td style="color:#888;padding-left:8px">${dn}</td><td>${inc.month_name||''} ${inc.hour>=0?'— '+inc.hour+':00':''}</td></tr>
         </table>
-        <div style="margin-top:8px;display:flex;gap:6px">
-          <span style="background:${inc.deaths>0?SEV_COLOR.red:'#eee'};color:${inc.deaths>0?'#fff':'#999'};padding:3px 10px;border-radius:8px;font-weight:700;font-size:11px">💀 ${inc.deaths}</span>
-          <span style="background:${inc.injuries>0?SEV_COLOR.orange:'#eee'};color:${inc.injuries>0?'#fff':'#999'};padding:3px 10px;border-radius:8px;font-weight:700;font-size:11px">🤕 ${inc.injuries}</span>
+        <div style="margin-top:7px;display:flex;gap:6px">
+          <span style="background:${inc.deaths>0?SEV_COLOR.red:'#eee'};color:${inc.deaths>0?'#fff':'#999'};padding:3px 11px;border-radius:9px;font-weight:700;font-size:11px">🕯️ ${inc.deaths}</span>
+          <span style="background:${inc.injuries>0?SEV_COLOR.orange:'#eee'};color:${inc.injuries>0?'#fff':'#999'};padding:3px 11px;border-radius:9px;font-weight:700;font-size:11px">🩹 ${inc.injuries}</span>
         </div>
-        <div style="margin-top:6px;color:#555;font-size:11px;border-top:1px solid #eee;padding-top:6px;line-height:1.5">
-          ${inc.cause.slice(0,120)}${inc.cause.length>120?'…':''}
-        </div>
-      </div>
-    `, { maxWidth:290, className:'custom-popup', autoPan:true });
-
-    m.on('click', e => {
-      L.DomEvent.stopPropagation(e);
-      if (window.innerWidth <= 600) {
-        showMobSheet(inc, color);  // bottom sheet على الموبايل
-      }
-    });
-
+        ${inc.cause?`<div style="margin-top:6px;color:#555;font-size:11px;border-top:1px solid #eee;padding-top:5px;line-height:1.5">${inc.cause.slice(0,120)}${inc.cause.length>120?'…':''}</div>`:''}
+      </div>`,{maxWidth:290,autoPan:true});
+    m.on('click',e=>{ L.DomEvent.stopPropagation(e);
+      if(window.innerWidth<=900) showMobSheet(inc,color); });
     markersLayer.addLayer(m);
   });
 
   mapObj.addLayer(markersLayer);
-  const deathCount = FILT.filter(d => d.deaths > 0).length;
-  document.getElementById('map-count').textContent = `يعرض ${deathCount.toLocaleString('ar')} حادث وفاة من أصل ${FILT.length.toLocaleString('ar')}`;
+  document.getElementById('map-count').textContent = allMode
+    ? `يعرض ${nf(shown)} حادثاً (إحداثيات بعضها تقريبية)`
+    : `يعرض ${nf(shown)} حادث وفاة من أصل ${nf(FILT.length)} سجل`;
 }
 
-function showMobSheet(inc, color) {
-  const dn = isDayTime(inc.hour, inc.day_night) ? '☀️ نهار' : '🌙 ليل';
-  document.getElementById('mob-sheet-body').innerHTML = `
+function mapFit(){
+  const pts=FILT.filter(d=>d.lat&&d.lng&&(allMode||d.deaths>0)).map(d=>[d.lat,d.lng]);
+  if(pts.length) mapObj.fitBounds(L.latLngBounds(pts).pad(0.1));
+}
+
+/* mobile bottom sheet */
+function showMobSheet(inc,color){
+  const dn=isDayTime(inc.hour,inc.day_night)?'☀️ نهار':'🌙 ليل';
+  document.getElementById('mob-sheet-body').innerHTML=`
     <div style="border-bottom:2px solid ${color};padding-bottom:8px;margin-bottom:10px">
-      <span style="color:${color};font-weight:700;font-size:12px">● ${inc.deaths>0?'وفاة':'حادث مروري'}</span>
-    </div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;line-height:2">
-      <tr><td style="color:var(--muted);width:90px">📅 التاريخ</td><td style="color:var(--text);font-weight:500">${inc.date} ${inc.time||''}</td></tr>
-      <tr><td style="color:var(--muted)">🛣️ الطريق</td><td style="color:var(--text);font-weight:500">${inc.road_name}</td></tr>
-      <tr><td style="color:var(--muted)">📋 العقد</td><td style="color:var(--text)">${inc.contract}</td></tr>
-      <tr><td style="color:var(--muted)">📍 الكيلو</td><td style="color:var(--text)" dir="ltr">${inc.km_mark||'—'}</td></tr>
-      <tr><td style="color:var(--muted)">🚗 المركبة</td><td style="color:var(--text)">${inc.vehicle_type||'—'}</td></tr>
-      <tr><td style="color:var(--muted)">⛅ الطقس</td><td style="color:var(--text)">${inc.weather||'—'}</td></tr>
-      <tr><td style="color:var(--muted)">${dn}</td><td style="color:var(--text)">${inc.month_name||'—'} — ${inc.hour>=0?inc.hour+':00':'—'}</td></tr>
+      <span style="color:${color};font-weight:700;font-size:13px">● ${inc.deaths>0?'حادث وفاة':'حادث مروري'}</span></div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;line-height:2.1">
+      <tr><td style="color:var(--muted);width:90px">📅 التاريخ</td><td style="font-weight:500">${inc.date||'—'} ${inc.time||''}</td></tr>
+      <tr><td style="color:var(--muted)">🛣️ الطريق</td><td style="font-weight:500">${inc.road_name||'—'}</td></tr>
+      <tr><td style="color:var(--muted)">📋 العقد</td><td>${inc.contract||'—'}</td></tr>
+      <tr><td style="color:var(--muted)">📍 الكيلو</td><td dir="ltr" style="text-align:right">${inc.km_mark||'—'}</td></tr>
+      <tr><td style="color:var(--muted)">🚗 المركبة</td><td>${inc.vehicle_type||'—'}</td></tr>
+      <tr><td style="color:var(--muted)">⛅ الطقس</td><td>${inc.weather||'—'}</td></tr>
+      <tr><td style="color:var(--muted)">${dn}</td><td>${inc.month_name||'—'} ${inc.hour>=0?'— '+inc.hour+':00':''}</td></tr>
     </table>
     <div style="display:flex;gap:8px;margin-top:10px">
-      <span style="background:${inc.deaths>0?'rgba(248,81,73,.2)':'rgba(0,0,0,.1)'};color:${inc.deaths>0?'#f85149':'var(--muted)'};padding:4px 12px;border-radius:10px;font-weight:700;font-size:12px">💀 ${inc.deaths}</span>
-      <span style="background:${inc.injuries>0?'rgba(240,136,62,.2)':'rgba(0,0,0,.1)'};color:${inc.injuries>0?'#f0883e':'var(--muted)'};padding:4px 12px;border-radius:10px;font-weight:700;font-size:12px">🤕 ${inc.injuries}</span>
-      ${inc.cause_category?`<span style="background:rgba(188,140,255,.15);color:var(--purple);padding:4px 10px;border-radius:10px;font-size:11px">${inc.cause_category}</span>`:''}
+      <span class="badge ${inc.deaths>0?'b-red':'b-zero'}">🕯️ ${nf(inc.deaths)}</span>
+      <span class="badge ${inc.injuries>0?'b-orange':'b-zero'}">🩹 ${nf(inc.injuries)}</span>
+      ${inc.cause_category?`<span class="badge" style="background:rgba(144,133,233,.15);color:#b3aaf2">${inc.cause_category}</span>`:''}
     </div>
-    ${inc.cause?`<div style="margin-top:10px;color:var(--muted);font-size:11px;line-height:1.6;border-top:1px solid var(--border);padding-top:8px">${inc.cause.slice(0,150)}${inc.cause.length>150?'…':''}</div>`:''}
-  `;
-  document.getElementById('mob-incident-sheet').classList.add('show');
+    ${inc.cause?`<div style="margin-top:10px;color:var(--muted);font-size:11px;line-height:1.7;border-top:1px solid var(--border);padding-top:8px">${inc.cause.slice(0,160)}${inc.cause.length>160?'…':''}</div>`:''}`;
+  document.getElementById('mob-sheet').classList.add('show');
+}
+function closeMobSheet(){ document.getElementById('mob-sheet').classList.remove('show'); }
+
+/* ═══════════════════ Data table ═══════════════════ */
+function renderTable(){
+  const search=(document.getElementById('tbl-search').value||'').toLowerCase();
+  let rows=FILT;
+  if(search) rows=rows.filter(d=>
+    (d.road_name||'').toLowerCase().includes(search)||
+    (d.cause||'').toLowerCase().includes(search)||
+    (d.cause_category||'').toLowerCase().includes(search)||
+    (d.vehicle_type||'').toLowerCase().includes(search)||
+    (d.date||'').includes(search)||
+    (d.plate||'').toLowerCase().includes(search));
+  document.getElementById('tbl-count').textContent=`(${nf(rows.length)} سجل${rows.length>250?' — يعرض أول ٢٥٠':''})`;
+  document.getElementById('tbl-body').innerHTML=rows.slice(0,250).map(d=>`
+    <tr onclick="showDetail(${ALL.indexOf(d)})">
+      <td>${d.year}</td><td>${d.date||'—'}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${(d.road_name||'').replace(/"/g,'&quot;')}">${d.road_name||'—'}</td>
+      <td>${d.contract||'—'}</td><td dir="ltr">${d.km_mark||'—'}</td>
+      <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis">${dispVehicle(d.vehicle_type)}</td>
+      <td>${d.is_aggregate?'—':(isDayTime(d.hour,d.day_night)?'☀️':'🌙')}</td>
+      <td>${d.hour>=0?d.hour+':00':'—'}</td>
+      <td>${d.weather||'—'}</td>
+      <td>${d.deaths>0?`<span class="badge b-red">${nf(d.deaths)}</span>`:'<span class="badge b-zero">٠</span>'}</td>
+      <td>${d.injuries>0?`<span class="badge b-orange">${nf(d.injuries)}</span>`:'<span class="badge b-zero">٠</span>'}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis">${d.cause_category||'—'}</td>
+    </tr>`).join('');
+}
+function dispVehicle(v){
+  if(!v) return '—';
+  const parts=splitVehicles(v);
+  if(!parts.length) return v.slice(0,14);
+  const first=parts[0].slice(0,16);
+  return first+(parts.length>1?` <span style="color:var(--muted);font-size:10px">+${parts.length-1}</span>`:'');
 }
 
-function closeMobSheet() {
-  document.getElementById('mob-incident-sheet').classList.remove('show');
+function showDetail(idx){
+  const d=ALL[idx]; if(!d) return;
+  const item=(k,v,full)=>v?`<div class="d-item${full?' full':''}"><div class="k">${k}</div><div class="v">${v}</div></div>`:'';
+  document.getElementById('modal-title').innerHTML=d.deaths>0?'🕯️ حادث وفاة':'🚧 تفاصيل الحادث';
+  document.getElementById('modal-body').innerHTML=
+    item('التاريخ',(d.date||'—')+(d.time?' — '+d.time:''))+
+    item('السنة',d.year)+
+    item('الطريق',d.road_name,'full')+
+    item('رقم الطريق',d.road_number)+
+    item('العقد',d.contract)+
+    item('العلامة الكيلومترية',d.km_mark)+
+    item('الاتجاه',d.direction)+
+    item('المركبة',d.vehicle_type)+
+    item('اللوحة',d.plate)+
+    item('الوفيات',`<span class="badge ${d.deaths>0?'b-red':'b-zero'}">${nf(d.deaths)}</span>`)+
+    item('الإصابات',`<span class="badge ${d.injuries>0?'b-orange':'b-zero'}">${nf(d.injuries)}</span>`)+
+    item('الطقس',d.weather)+
+    item('ليل / نهار',d.is_aggregate?null:(isDayTime(d.hour,d.day_night)?'☀️ نهار':'🌙 ليل'))+
+    item('فئة السبب',d.cause_category)+
+    item('الجهة المباشرة',d.authority)+
+    item('التلفيات',d.damage,'full')+
+    item('وصف السبب',d.cause,'full')+
+    (d.is_aggregate?item('ملاحظة','سجل إحصائي مجمّع لسنة 2023 — يمثل '+nf(d.total_incidents||1)+' حادثاً على هذا الطريق','full'):'');
+  document.getElementById('modal').classList.add('show');
 }
+function closeModal(){ document.getElementById('modal').classList.remove('show'); }
 
-function mapFit() {
-  const pts = FILT.filter(d=>d.lat&&d.lng).map(d=>[d.lat,d.lng]);
-  if (pts.length) mapObj.fitBounds(L.latLngBounds(pts).pad(0.1));
-}
-
-function toggleHeatMode() {
-  heatMode = !heatMode;
-  const btn = document.getElementById('heatmode-btn');
-  btn.style.borderColor = heatMode ? 'var(--red)' : '';
-  btn.style.color       = heatMode ? 'var(--red)' : '';
-  updateMapMarkers();
-}
-
-// ═══════════════════════════════════════════════
-// Table
-// ═══════════════════════════════════════════════
-function renderTable() {
-  const search = (document.getElementById('tbl-search')?.value || '').toLowerCase();
-  let rows = FILT;
-  if (search) rows = rows.filter(d =>
-    (d.road_name||'').toLowerCase().includes(search) ||
-    (d.cause||'').toLowerCase().includes(search) ||
-    (d.authority||'').toLowerCase().includes(search) ||
-    (d.vehicle_type||'').toLowerCase().includes(search) ||
-    (d.date||'').includes(search) ||
-    (d.contract||'').includes(search)
-  );
-
-  document.getElementById('tbl-count').textContent = rows.length + ' سجل';
-
-  document.getElementById('tbl-body').innerHTML = rows.slice(0, 200).map((d, i) => {
-    const isDay = isDayTime(d.hour, d.day_night);
-    const dnBadge = d.hour >= 0
-      ? `<span class="day-night ${isDay?'dn-day':'dn-night'}">${isDay?'☀️':'🌙'} ${isDay?'نهار':'ليل'}</span>`
-      : '<span class="day-night" style="color:var(--muted)">—</span>';
-    const yearColor = d.year===2023?'var(--purple)':d.year===2024?'var(--orange)':'var(--accent)';
-    return `
-      <tr onclick="showDetail(${i})">
-        <td style="color:var(--muted)">${i+1}</td>
-        <td><span class="bpill" style="background:${yearColor}22;color:${yearColor}">${d.year}${d.is_aggregate?' 📊':''}</span></td>
-        <td>${d.is_aggregate ? '<span style="color:var(--muted);font-size:10px">إجمالي سنوي</span>' : d.date}</td>
-        <td title="${d.road_name}">${d.road_name.slice(0,18)}</td>
-        <td><span class="bpill" style="background:rgba(88,166,255,.15);color:var(--accent)">${d.contract}</span></td>
-        <td style="direction:ltr;text-align:right;color:var(--muted)">${d.km_mark||'—'}</td>
-        <td title="${d.vehicle_type||''}">${displayVehicle(d.vehicle_type, flt.vehicle)}</td>
-        <td>${d.is_aggregate ? `<span style="color:var(--muted);font-size:10px">☀️${d.day_incidents||0} 🌙${d.night_incidents||0}</span>` : dnBadge}</td>
-        <td>${d.month_name||'—'}</td>
-        <td style="color:var(--muted)">${d.hour>=0?d.hour+':00':'—'}</td>
-        <td>${d.weather||'—'}</td>
-        <td>${d.deaths>0?`<span class="bpill bp-red">${d.deaths}</span>`:'<span class="bp-muted">0</span>'}</td>
-        <td>${d.injuries>0?`<span class="bpill bp-ora">${d.injuries}</span>`:'<span class="bp-muted">0</span>'}</td>
-        <td title="${d.cause||d.description||''}">${d.cause_category ? `<span style="background:rgba(188,140,255,.15);color:var(--purple);padding:1px 7px;border-radius:10px;font-size:10px;white-space:nowrap">${d.cause_category}</span>` : '—'}</td>
-        <td title="${d.authority||''}">${(d.authority||'—').slice(0,20)}</td>
-      </tr>`;
-  }).join('') || '<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--muted)">لا توجد بيانات</td></tr>';
-}
-
-function showDetail(idx) {
-  const d = FILT[idx];
-  if (!d) return;
-  const isDay = isDayTime(d.hour, d.day_night);
-  document.getElementById('modal-content').innerHTML = `
-    <div class="mrow"><div class="mrow-lbl">📅 التاريخ</div><div class="mrow-val">${d.date} ${d.time||''}</div></div>
-    <div class="mrow"><div class="mrow-lbl">🛣️ الطريق</div><div class="mrow-val">${d.road_name}</div></div>
-    <div class="mrow"><div class="mrow-lbl">📋 رقم العقد</div><div class="mrow-val">${d.contract}</div></div>
-    <div class="mrow"><div class="mrow-lbl">📍 العلامة</div><div class="mrow-val">${d.km_mark}</div></div>
-    <div class="mrow"><div class="mrow-lbl">🧭 الاتجاه</div><div class="mrow-val">${d.direction}</div></div>
-    <div class="mrow"><div class="mrow-lbl">🚗 المركبات</div><div class="mrow-val">
-      ${splitVehicles(d.vehicle_type||'').map(v=>`<span style="display:inline-block;background:rgba(88,166,255,.15);color:var(--accent);padding:1px 7px;border-radius:10px;margin:1px;font-size:11px">${v}</span>`).join('') || d.vehicle_type || '—'}
-    </div></div>
-    <div class="mrow"><div class="mrow-lbl">🔢 اللوحة</div><div class="mrow-val" dir="ltr">${d.plate||'—'}</div></div>
-    <div class="mrow"><div class="mrow-lbl">⛅ الطقس</div><div class="mrow-val">${d.weather||'—'}</div></div>
-    <div class="mrow"><div class="mrow-lbl">${isDay?'☀️':'🌙'} ليل/نهار</div><div class="mrow-val">${isDay?'نهار':'ليل'}</div></div>
-    <div class="mrow"><div class="mrow-lbl">📅 الشهر</div><div class="mrow-val">${d.month_name||'—'}</div></div>
-    <div class="mrow"><div class="mrow-lbl">⏰ الساعة</div><div class="mrow-val">${d.hour>=0?d.hour+':00':'—'}</div></div>
-    <div class="mrow"><div class="mrow-lbl">💀 الوفيات</div><div class="mrow-val" style="color:${d.deaths>0?'var(--red)':'inherit'}">${d.deaths}</div></div>
-    <div class="mrow"><div class="mrow-lbl">🤕 الإصابات</div><div class="mrow-val" style="color:${d.injuries>0?'var(--orange)':'inherit'}">${d.injuries}</div></div>
-    <div class="mrow"><div class="mrow-lbl">🔧 التلفيات</div><div class="mrow-val">${d.damage||'لا يوجد'}</div></div>
-    <div class="mrow"><div class="mrow-lbl">📂 فئة السبب</div><div class="mrow-val"><span style="background:rgba(188,140,255,.15);color:var(--purple);padding:2px 9px;border-radius:10px;font-size:12px">${d.cause_category||'—'}</span></div></div>
-    <div class="mrow" style="align-items:flex-start"><div class="mrow-lbl">⚠️ السبب</div><div class="mrow-val" style="white-space:normal">${d.cause||d.description||'—'}</div></div>
-    <div class="mrow"><div class="mrow-lbl">🏛️ الجهة</div><div class="mrow-val">${d.authority||'—'}</div></div>
-  `;
-  document.getElementById('detail-modal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('detail-modal').classList.remove('open');
-}
-
-function logout() {
-  sessionStorage.removeItem('auth');
-  location.reload();
-}
-
-// ═══════════════════════════════════════════════
-// UI Helpers
-// ═══════════════════════════════════════════════
-function switchPTab(name) {
-  document.getElementById('filter-pane').style.display = name === 'filter' ? 'block' : 'none';
-  document.getElementById('road-pane').style.display = name === 'roads' ? 'block' : 'none';
-  document.getElementById('ptab-filter').classList.toggle('active', name === 'filter');
-  document.getElementById('ptab-roads').classList.toggle('active', name === 'roads');
-  if (name === 'roads') renderRoadTable();
-}
-
-function toggleDrawer() {
-  drawerOpen = !drawerOpen;
-  const d = document.getElementById('data-drawer');
-  d.className = drawerOpen ? 'open' : 'closed';
-  document.getElementById('drawer-icon').textContent = drawerOpen ? '▼ إغلاق' : '▲ فتح';
-  if (drawerOpen) renderTable();
-}
-
-function filterHighlight(type) {}
-
-function toggleKpiActive(id, active) {
-  const el = document.getElementById(id);
-  if (el) el.classList.toggle('kpi-active', active);
-}
-
-// peakMonth/Hour يُحفظان هنا للنقر
-let _peakMonth = null, _peakHour = -1;
-
-function kpiClick(type) {
-  switch(type) {
-    case 'reset':
-      clearCF();
-      resetFilters();
-      break;
-    case 'deaths':
-      cf.deathsOnly   = !cf.deathsOnly;
-      cf.injuriesOnly = false;
-      applyFilters();
-      break;
-    case 'injuries':
-      cf.injuriesOnly = !cf.injuriesOnly;
-      cf.deathsOnly   = false;
-      applyFilters();
-      break;
-    case 'day':
-      if (flt.daynight.length===1 && flt.daynight[0]==='day') {
-        flt.daynight = [];
-        document.querySelectorAll('#daynight-chips .chip').forEach(c=>c.classList.remove('on'));
-      } else {
-        flt.daynight = ['day'];
-        document.querySelectorAll('#daynight-chips .chip').forEach(c=>{
-          c.classList.toggle('on', c.dataset.val==='day');
-        });
-      }
-      applyFilters();
-      break;
-    case 'night':
-      if (flt.daynight.length===1 && flt.daynight[0]==='night') {
-        flt.daynight = [];
-        document.querySelectorAll('#daynight-chips .chip').forEach(c=>c.classList.remove('on'));
-      } else {
-        flt.daynight = ['night'];
-        document.querySelectorAll('#daynight-chips .chip').forEach(c=>{
-          c.classList.toggle('on', c.dataset.val==='night');
-        });
-      }
-      applyFilters();
-      break;
-    case 'peak-month':
-      if (_peakMonth) toggleCF('month', _peakMonth);
-      break;
-    case 'peak-hour':
-      if (_peakHour >= 0) toggleCF('hour', cf.hour===_peakHour ? null : _peakHour);
-      break;
-  }
-}
-
-function exportCSV() {
-  const h = ['التاريخ','الطريق','رقم العقد','العلامة','الاتجاه','المركبة','اللوحة','الطقس','ليل/نهار','الشهر','الساعة','وفيات','إصابات','السبب','الجهة'];
-  const rows = FILT.map(d => [
-    d.date, d.road_name, d.contract, d.km_mark, d.direction,
-    d.vehicle_type, d.plate, d.weather,
-    isDayTime(d.hour, d.day_night)?'نهار':'ليل', d.month_name, d.hour>=0?d.hour:'',
-    d.deaths, d.injuries, (d.cause||'').replace(/,/g,'؛'), d.authority
-  ]);
-  const csv = '﻿' + [h,...rows].map(r=>r.join(',')).join('\n');
-  const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'safety_incidents_2025.csv';
+function exportCSV(){
+  const cols=['year','date','time','road_name','road_number','contract','km_mark','vehicle_type','plate','deaths','injuries','weather','cause_category','cause','authority'];
+  const head=['السنة','التاريخ','الوقت','الطريق','رقم الطريق','العقد','الكيلو','المركبة','اللوحة','وفيات','إصابات','الطقس','فئة السبب','السبب','الجهة'];
+  const lines=[head.join(',')].concat(FILT.map(d=>cols.map(c=>`"${String(d[c]??'').replace(/"/g,'""').replace(/\n/g,' ')}"`).join(',')));
+  const blob=new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='حوادث_حائل_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
-  notify('تم تصدير CSV بنجاح!');
+  toast('تم تصدير '+nf(FILT.length)+' سجل ✅');
 }
 
-function notify(msg, isErr=false) {
-  const n = document.getElementById('notify');
-  n.textContent = msg;
-  n.style.cssText = `display:block;background:${isErr?'var(--red)':'var(--green)'};color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;position:fixed;bottom:16px;left:16px;z-index:999`;
-  setTimeout(()=>n.style.display='none', 3000);
+/* ═══════════════════ Drawer + mobile tabs ═══════════════════ */
+function toggleDrawer(e){
+  if(e && e.target.closest('#drawer-tools')) return;
+  document.getElementById('drawer').classList.toggle('open');
+}
+function openDrawer(){ document.getElementById('drawer').classList.add('open'); }
+
+function mobTab(tab){
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('mt-'+tab)?.classList.add('on');
+  document.getElementById('map-wrap').classList.toggle('mob-show',tab==='map');
+  document.getElementById('panel-filters').classList.toggle('mob-show',tab==='filters');
+  document.getElementById('panel-charts').classList.toggle('mob-show',tab==='charts');
+  document.getElementById('drawer').classList.toggle('mob-show',tab==='table');
+  if(tab==='map'&&mapObj) setTimeout(()=>mapObj.invalidateSize(),80);
+  if(tab==='charts') setTimeout(renderCharts,60);
+  if(tab==='table') document.getElementById('drawer').classList.add('open');
+  window.scrollTo({top:0});
+}
+window.addEventListener('resize',()=>{ if(mapObj) mapObj.invalidateSize(); });
+
+/* ═══════════════════ Toast ═══════════════════ */
+let toastTimer=null;
+function toast(msg,isErr){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.toggle('err',!!isErr); t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
 }
 
-// Close modal on backdrop click
-document.getElementById('detail-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('detail-modal')) closeModal();
-});
-
-init();
-
-// ═══════════════════════════════════════════════
-// Mobile Navigation
-// ═══════════════════════════════════════════════
-let mobCurrent = 'map';
-
-function mobTab(tab) {
-  mobCurrent = tab;
-  document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('mnav-' + tab)?.classList.add('active');
-
-  document.getElementById('mob-filters').classList.remove('show');
-  document.getElementById('mob-charts').classList.remove('show');
-
-  if (tab === 'filters') {
-    document.getElementById('mob-filters').classList.add('show');
-  } else if (tab === 'charts') {
-    document.getElementById('mob-charts').classList.add('show');
-    renderMobCharts();
-  } else if (tab === 'table') {
-    document.getElementById('mob-filters').classList.remove('show');
-    toggleDrawer();
-  } else if (tab === 'map') {
-    setTimeout(() => { if (mapObj) { mapObj.invalidateSize(); mapFit(); } }, 100);
-  }
-}
-
-function buildMobFilters() {
-  if (window.innerWidth > 600) return;
-
-  // Year chips
-  const yc = document.getElementById('mob-year-chips');
-  if (yc && !yc.children.length) {
-    [2023,2024,2025].forEach(y => {
-      const c = document.createElement('div');
-      c.className = 'chip on';
-      c.textContent = y;
-      c.onclick = () => toggleChip(c, y, flt.years);
-      yc.appendChild(c);
-    });
-  }
-
-  // Month chips
-  const mc = document.getElementById('mob-month-chips');
-  if (mc && !mc.children.length) {
-    MONTHS.forEach(m => {
-      if (!ALL.some(d => d.month_name === m)) return;
-      const c = document.createElement('div');
-      c.className = 'chip';
-      c.textContent = m.slice(0,4);
-      c.title = m;
-      c.onclick = () => toggleChip(c, m, flt.months);
-      mc.appendChild(c);
-    });
-  }
-
-  // Contract chips
-  const cc = document.getElementById('mob-contract-chips');
-  if (cc && !cc.children.length) {
-    [...new Set(ALL.map(d=>d.contract).filter(Boolean))].sort().forEach(v => {
-      const c = document.createElement('div');
-      c.className = 'chip';
-      c.textContent = 'عقد '+v;
-      c.onclick = () => toggleChip(c, v, flt.contracts);
-      cc.appendChild(c);
-    });
-  }
-
-  // Weather chips
-  const wc = document.getElementById('mob-weather-chips');
-  if (wc && !wc.children.length) {
-    [...new Set(ALL.map(d=>d.weather).filter(Boolean))].sort().forEach(v => {
-      const c = document.createElement('div');
-      c.className = 'chip';
-      c.textContent = v;
-      c.onclick = () => toggleChip(c, v, flt.weathers);
-      wc.appendChild(c);
-    });
-  }
-
-  // Cause chips
-  const causeEl = document.getElementById('mob-cause-chips');
-  if (causeEl && !causeEl.children.length) {
-    const CAUSE_ICONS = {'عدم الانتباه':'😴','انحراف المركبة':'🔄','انفجار الإطار':'💥','صدم حيوان سائب':'🐪','عطل فني':'🔧','تجاوز خاطئ':'↩️','النعاس':'💤'};
-    [...new Set(ALL.map(d=>d.cause_category).filter(Boolean))].sort().forEach(cat => {
-      const c = document.createElement('div');
-      c.className = 'chip';
-      c.textContent = (CAUSE_ICONS[cat]||'') + ' ' + cat;
-      c.onclick = () => toggleChip(c, cat, flt.causes);
-      causeEl.appendChild(c);
-    });
-  }
-
-  // Road select
-  const rs = document.getElementById('mob-road');
-  if (rs && rs.options.length < 2) {
-    [...new Set(ALL.map(d=>d.road_name).filter(Boolean))].sort().forEach(r => {
-      const o = document.createElement('option');
-      o.value = r; o.textContent = r;
-      rs.appendChild(o);
-    });
-  }
-}
-
-function mobDayNight(el, val) {
-  toggleChip(el, val, flt.daynight);
-}
-
-function syncMobFilters() {
-  document.querySelectorAll('#mob-year-chips .chip').forEach(c => {
-    c.classList.toggle('on', flt.years.includes(parseInt(c.textContent)));
-  });
-  document.querySelectorAll('#mob-month-chips .chip, #mob-contract-chips .chip, #mob-weather-chips .chip, #mob-cause-chips .chip').forEach(c => c.classList.remove('on'));
-  document.getElementById('mob-road').value = '';
-}
-
-// Mobile charts (separate canvas IDs)
-const MOB_CHART_MAP = {
-  'mob-mc-monthly':   'mc-monthly',
-  'mob-mc-casualties':'mc-casualties',
-  'mob-mc-hourly':    'mc-hourly',
-  'mob-mc-weather':   'mc-weather',
-  'mob-mc-causes':    'mc-causes',
-  'mob-mc-days':      'mc-days',
-};
-let mobCharts = {};
-
-function renderMobCharts() {
-  if (window.innerWidth > 600) return;
-  const gridC='rgba(48,54,61,.5)', tickC='#8b949e';
-
-  // Reuse same data calculations as desktop charts
-  const mData={}; MONTHS.forEach(m=>mData[m]=0);
-  FILT.forEach(d=>{ if(d.month_name) mData[d.month_name]++; });
-  mkMobChart('mob-mc-monthly','bar',MONTHS.map(m=>m.slice(0,2)),[{
-    data:MONTHS.map(m=>mData[m]),
-    backgroundColor:PALETTE.map(c=>c+'99'), borderColor:PALETTE, borderWidth:1, borderRadius:2
-  }]);
-
-  const mD={},mI={}; MONTHS.forEach(m=>{mD[m]=0;mI[m]=0;});
-  FILT.forEach(d=>{ if(d.month_name){mD[d.month_name]+=d.deaths;mI[d.month_name]+=d.injuries;} });
-  mkMobChart('mob-mc-casualties','line',MONTHS.map(m=>m.slice(0,2)),[
-    {label:'وفيات',data:MONTHS.map(m=>mD[m]),borderColor:'#f85149',backgroundColor:'rgba(248,81,73,.1)',tension:.4,fill:true,pointRadius:2},
-    {label:'إصابات',data:MONTHS.map(m=>mI[m]),borderColor:'#f0883e',backgroundColor:'rgba(240,136,62,.1)',tension:.4,fill:true,pointRadius:2}
-  ],{plugins:{legend:{display:true,labels:{color:'#8b949e',boxWidth:8,font:{size:9}}}}});
-
-  const hData=new Array(24).fill(0);
-  FILT.forEach(d=>{if(d.hour>=0)hData[d.hour]++;});
-  mkMobChart('mob-mc-hourly','bar',Array.from({length:24},(_,i)=>`${i}`),[{
-    data:hData,
-    backgroundColor:hData.map(v=>v>12?'#f8514999':'#58a6ff55'),
-    borderColor:hData.map(v=>v>12?'#f85149':'#58a6ff'),borderWidth:1,borderRadius:1
-  }]);
-
-  const wC={}; FILT.forEach(d=>{if(d.weather)wC[d.weather]=(wC[d.weather]||0)+1;});
-  const wE=Object.entries(wC).sort((a,b)=>b[1]-a[1]);
-  mkMobChart('mob-mc-weather','doughnut',wE.map(e=>e[0]),[{
-    data:wE.map(e=>e[1]),
-    backgroundColor:PALETTE.map(c=>c+'cc'),borderColor:'#1c2333',borderWidth:2
-  }],{plugins:{legend:{display:true,position:'bottom',labels:{color:'#8b949e',boxWidth:7,font:{size:9},padding:5}}}});
-
-  const causeData={};
-  FILT.forEach(d=>{if(d.cause_category)causeData[d.cause_category]=(causeData[d.cause_category]||0)+1;});
-  const cE=Object.entries(causeData).sort((a,b)=>b[1]-a[1]);
-  mkMobChart('mob-mc-causes','bar',cE.map(e=>e[0]),[{
-    data:cE.map(e=>e[1]),
-    backgroundColor:PALETTE.map(c=>c+'99'),borderColor:PALETTE,borderWidth:1,borderRadius:2
-  }],{indexAxis:'y'});
-
-  const dData={}; DAYS7.forEach(d=>dData[d]=0);
-  FILT.forEach(d=>{if(d.week_day)dData[d.week_day]=(dData[d.week_day]||0)+1;});
-  mkMobChart('mob-mc-days','bar',DAYS7.map(d=>d.slice(0,2)),[{
-    data:DAYS7.map(d=>dData[d]),
-    backgroundColor:DAYS7.map((_,i)=>(i===5||i===6)?'#f8514999':'#58a6ff77'),
-    borderColor:DAYS7.map((_,i)=>(i===5||i===6)?'#f85149':'#58a6ff'),borderWidth:1,borderRadius:2
-  }]);
-}
-
-function mkMobChart(id,type,labels,datasets,extraOpts={}) {
-  const ctx=document.getElementById(id);
-  if(!ctx) return;
-  if(mobCharts[id]) mobCharts[id].destroy();
-  const gridC='rgba(48,54,61,.5)',tickC='#8b949e';
-  const opts={responsive:true,maintainAspectRatio:true,
-    plugins:{legend:{display:false},tooltip:{rtl:true},...(extraOpts.plugins||{})},
-    ...extraOpts};
-  if(type!=='pie'&&type!=='doughnut') {
-    opts.scales={
-      x:{ticks:{color:tickC,font:{size:8}},grid:{color:gridC}},
-      y:{ticks:{color:tickC,font:{size:8}},grid:{color:gridC}},
-      ...(extraOpts.scales||{})
-    };
-  }
-  mobCharts[id]=new Chart(ctx,{type,data:{labels,datasets},options:opts});
-}
-
-// بناء فلاتر الموبايل بعد تحميل البيانات
-const _origApply = applyFilters;
-// hook بعد البناء الأول
-setTimeout(buildMobFilters, 1500);
+/* ═══════════════════ Boot ═══════════════════ */
+if (sessionStorage.getItem('auth')==='1') enterApp();
+else document.getElementById('pin-input').focus();
 </script>
 </body>
 </html>
